@@ -59,6 +59,44 @@ These SHACL shapes enable:
 
 Shapes define required and optional configuration properties, which are transformed into JSON objects at startup, according to the pipeline.
 
+<div class="example" title="From SHACL to JSON configuration">
+    This SHACL shape definition defines a configuration structure for a processor.
+    In RDF Connect, such shapes are used to describe required parameters.
+    They result in a well-typed JSON object that developers can rely on during implementation.
+
+    Shacl shape defining some required configuration for a processor
+
+```turtle
+[] a sh:NodeShape;
+    sh:targetClass <FooBar>;
+    sh:property [
+        sh:name "repeat";         # JSON field name
+        sh:datatype xsd:integer;  # specify datatype
+        sh:maxCount 1;
+        sh:path :repeat;
+    ], [
+        sh:name "messages";
+        sh:datatype xsd:string;
+        sh:path :msg;
+    ].
+```
+
+Processor configuration
+```turtle
+<MyProcessor> a <FooBar>;
+    :repeat 10;
+    :msg "Hello", "World".
+```
+
+Results in the following JSON structure.
+```typescript
+{ 
+    "repeat": 10,
+    "messages": [ "Hello", "World"]
+}
+```
+</div>
+
 
 ## Mapping SHACL to Configuration Structures
 
@@ -93,47 +131,6 @@ Each `sh:property` statement in a SHACL shape defines a configuration field with
     - If `sh:maxCount = 1`, the resulting field is a single value (`T`).
     - If `sh:maxCount > 1` or is unspecified, the resulting field is an array (`T[]`).
 
-## Example
-
-The following SHACL shape defines the expected configuration for a JavaScript processor:
-
-```turtle
-[ ] a sh:NodeShape ;
-  sh:targetSubjectsOf rdfc:jsImplementationOf ;
-  sh:property [
-    sh:path rdfc:entrypoint ;
-    sh:name "location" ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:datatype xsd:string ;
-  ], [
-    sh:path rdfc:file ;
-    sh:name "file" ;
-    sh:minCount 1 ;
-    sh:maxCount 1 ;
-    sh:datatype xsd:string ;
-  ], [
-    sh:path rdfc:class ;
-    sh:name "clazz" ;
-    sh:maxCount 1 ;
-    sh:datatype xsd:string ;
-  ].
-```
-
-This results in the following TypeScript-compatible configuration type:
-
-```ts
-{
-  location: string,
-  file: string,
-  clazz?: string
-}
-```
-
-Note that:
-
-* location and file are required.
-* clazz is optional due to the absence of `sh:minCount`.
 
 ## Nested Shapes and Component Types
 
@@ -183,6 +180,72 @@ This configuration ensures that the processor receives a data source named input
 
 This approach enables loose coupling between declarative pipeline configuration and concrete data-flow mechanisms.
 
+
+## Example: Putting it all together
+
+The following example SHACL shape could accompany a FooBar processor that appends text to each incoming message and echos it to the next channel.
+
+```turtle
+[ ] a sh:NodeShape;
+  sh:targetClass :Channels;
+  sh:property [
+    sh:path rdfc:input ;
+    sh:name "input" ;
+    sh:class rdfc:Reader ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ], [
+    sh:path rdfc:output ;
+    sh:name "output" ;
+    sh:class rdfc:Writer ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+  ].
+
+[ ] a sh:NodeShape ;
+  sh:targetClass <FooBar2> ;
+  sh:property [
+    sh:path :channel ;
+    sh:name "channels" ;
+    sh:minCount 1 ;
+    sh:class :Channels ;
+  ], [
+    sh:path :append ;
+    sh:name "append" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+  ].
+```
+
+```turtle
+<foobar> a <FooBar2>;
+    :channel [
+        #`a :Channels` is not  required, this is implicit from the definition
+        rdfc:input <channel1>;
+        rdfc:output <channel2>;
+    ], [
+        rdfc:input <channel2>;
+        rdfc:output <channel1>;
+    ];
+    :append " World!".
+```
+
+This results in the following JSON object:
+```typescript
+{
+  channels: [
+        { 
+            "input": { /* idiomatic input stream for channel <channel1> */ } ,
+            "output": {/* idiomatic output stream for channel <channel2> */ } ,
+        }, {
+            "input": { /* idiomatic input stream for channel <channel2> */ } ,
+            "output": {/* idiomatic output stream for channel <channel1> */ } ,
+        }
+  ],
+  append: " World!"
+}
+```
 
 
 # Getting Started
