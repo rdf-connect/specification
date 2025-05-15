@@ -9,6 +9,8 @@ Repository: https://github.com/your-org/rdf-connect
 Abstract: Some abstract 
 </pre>
 
+<link rel=stylesheet href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css">
+
 # Introduction
 
 RDF Connect is a modular framework for building and executing multilingual data processing pipelines using RDF as the configuration and orchestration layer.
@@ -16,7 +18,23 @@ RDF Connect is a modular framework for building and executing multilingual data 
 It enables fine-grained, reusable processor components that exchange streaming data, allowing workflows to be described declaratively across programming languages and environments.
 RDF Connect is especially well suited for data transformation, integration, and linked data publication.
 
+# Usage Paths
+
+<div class=note>
+This section is complete in terms of content, but may be reorganized or rewritten for clarity during editorial review.
+</div>
+
+Depending on your use case, you may only need a subset of this specification:
+
+* **Pipeline Authors**: Start with [[#getting-started]] and focus on [[#pipeline]].
+* **Processor Developers**: Read [[#processor]] and [[#runner]].
+* **Platform Maintainers**: Read all sections, including implementation notes.
+
 # Design Goals
+
+<div class=note>
+This section is complete in terms of content, but may be reorganized or rewritten for clarity during editorial review.
+</div>
 
 * **Language Agnosticism**: Integrate processor components written in different languages (e.g., JavaScript, Python, shell).
 * **Streaming by Default**: Pass data between processors, via an orchestrator, to support large-scale and real-time data.
@@ -43,10 +61,37 @@ Processors can be written in any language and executed with a runner.
 
 A runner is an execution strategy for processors — for example, a processor in Javascript is a class that is started using a `NodeRunner`.
 
+## Orchestrator
+
+The orchestrator is the core component responsible for executing a pipeline. 
+It reads the configuration, initializes runners, dispatches processor instantiations, and coordinates data flow between them. 
+It acts as the runtime conductor that interprets RDF Connect’s declarative configuration.
+
 ## Reader / Writer
 
 Readers and Writers are components that define how data is streamed into and out of a processor.
 These provide an idiomatic way to transport streaming data  between processors.
+
+
+# Getting Started
+
+<div class=issue>
+🚧 This section is a work in progress and will be expanded soon.
+</div>
+
+This section provides a high-level overview of how to define and run a pipeline in RDF Connect. The rest of the specification provides detail on how each part works.
+
+Here's a simple example:
+
+```turtle
+ex:pipeline a rdfc:Pipeline ;
+    rdfc:instantiates ex:myRunner ;
+    rdfc:processor ex:myProcessor .
+```
+
+Once a pipeline is fully described using RDF, it is handed off to the orchestrator.
+The orchestrator parses the configuration, resolves all runner and processor definitions, and initiates execution.
+
 
 # SHACL as Configuration Schema
 
@@ -248,19 +293,63 @@ This results in the following JSON object:
 ```
 
 
-# Getting Started
-
-This section provides a high-level overview of how to define and run a pipeline in RDF Connect. The rest of the specification provides detail on how each part works.
-
-Here's a simple example:
-
-```turtle
-ex:pipeline a rdfc:Pipeline ;
-    rdfc:instantiates ex:myRunner ;
-    rdfc:processor ex:myProcessor .
-```
 
 # RDF Connect by Layer
+
+
+## Orchestrator
+
+The orchestrator is the central runtime entity in RDF Connect. 
+It reads the pipeline configuration, sets up the runners, initiates processors, and routes messages between them.
+It ensures the dataflow graph described by the pipeline is brought to life across isolated runtimes.
+The orchestrator acts as a coordinator, not an executor. Each runner is responsible for running the actual processor code, but the orchestrator ensures the pipeline as a whole behaves as intended.
+
+Responsibilities:
+
+* Parse the pipeline RDF.
+* Load SHACL shapes for processors and runners.
+* Validate and coerce configuration to structured JSON.
+* Instantiate runners.
+* Start processors.
+* Mediate messages (data and control).
+* Handle retries, streaming, and backpressure.
+
+<div class=note>
+The remained of this section is intended for developers building custom runners or integrating RDF Connect into infrastructure.
+</div>
+
+### Protobuf Messaging Protocol
+
+Communication between the orchestrator and the runners happens using a strongly typed protocol defined in Protocol Buffers (protobuf).
+This enables language-independent and efficient communication across processes and machines.
+
+### Startup Flow
+
+The following diagram describes the startup sequence handled by the orchestrator. This includes validating pipeline structure, instantiating runners, and initializing processor instances.
+
+<pre class=include>
+path: ./startup.mdd
+</pre>
+
+### Message Handling Flow
+
+Once processors are running, the orchestrator handles incoming messages and forwards them to the appropriate reader instances, based on their declared channels.
+
+<pre class=include>
+path: ./message.mdd
+</pre>
+
+
+### Streaming Messages
+
+For large messages or real-time input, RDF Connect supports a streaming model.
+Instead of sending entire payloads as a single message, the message can be broken into chunks and sends them over time. 
+This is handled by the StreamChunk message type.
+
+<pre class=include>
+path: ./streamMessage.mdd
+</pre>
+
 
 ## Runner
 
@@ -289,20 +378,22 @@ Pipelines connect processors using runners to form a processing graph.
 
 This is the main unit most users interact with when defining workflows.
 
+
 # Ontology Reference
 
 The RDF Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF Connect Ontology](https://w3id.org/rdf-connect/ontology.ttl) for details.
 
-# Usage Paths
 
-Depending on your use case, you may only need a subset of this specification:
+# Putting It All Together: Example Flow and Use Case
 
-* **Pipeline Authors**: Start with [[#getting-started]] and focus on [[#pipeline]].
-* **Processor Developers**: Read [[#processor]] and [[#runner]].
-* **Platform Maintainers**: Read all sections, including implementation notes.
-
-## Putting It All Together: Example Flow and Use Case
+<div class=issue>
+🚧 This section is a work in progress and will be expanded soon.
+</div>
 
 
 
 
+<script type=module>
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
