@@ -1489,8 +1489,9 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
-  <meta content="e73094a3489d2692db4221c225c6eaf3eeab3d53" name="revision">
+  <meta content="9d0983fee38a0f5f58afa672b93d63cfb001f2a1" name="revision">
   <meta content="dark light" name="color-scheme">
+  <link href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" rel="stylesheet">
 <style>/* Boilerplate: style-autolinks */
 .css.css, .property.property, .descriptor.descriptor {
     color: var(--a-normal-text);
@@ -2019,6 +2020,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
     <dl>
      <dt>Issue Tracking:
      <dd><a href="https://github.com/your-org/rdf-connect/issues/">GitHub</a>
+     <dd><a href="#issues-index">Inline In Spec</a>
      <dt class="editor">Editor:
      <dd class="editor p-author h-card vcard"><a class="p-name fn u-url url" href="https://example.org">RDF Connect Team</a>
     </dl>
@@ -2041,47 +2043,53 @@ Parts of this work may be from another specification document.  If so, those par
    <h2 class="no-num no-toc no-ref" id="contents">Table of Contents</h2>
    <ol class="toc" role="directory">
     <li><a href="#introduction"><span class="secno">1</span> <span class="content">Introduction</span></a>
-    <li><a href="#design-goals"><span class="secno">2</span> <span class="content">Design Goals</span></a>
+    <li><a href="#usage-paths"><span class="secno">2</span> <span class="content">Usage Paths</span></a>
+    <li><a href="#design-goals"><span class="secno">3</span> <span class="content">Design Goals</span></a>
     <li>
-     <a href="#concepts"><span class="secno">3</span> <span class="content">Concepts</span></a>
+     <a href="#concepts"><span class="secno">4</span> <span class="content">Concepts</span></a>
      <ol class="toc">
-      <li><a href="#pipeline"><span class="secno">3.1</span> <span class="content">Pipeline</span></a>
-      <li><a href="#processor"><span class="secno">3.2</span> <span class="content">Processor</span></a>
-      <li><a href="#runner"><span class="secno">3.3</span> <span class="content">Runner</span></a>
-      <li><a href="#reader-writer"><span class="secno">3.4</span> <span class="content">Reader / Writer</span></a>
-     </ol>
-    <li>
-     <a href="#shacl-as-configuration-schema"><span class="secno">4</span> <span class="content">SHACL as Configuration Schema</span></a>
-     <ol class="toc">
-      <li>
-       <a href="#mapping-shacl-to-configuration-structures"><span class="secno">4.1</span> <span class="content">Mapping SHACL to Configuration Structures</span></a>
-       <ol class="toc">
-        <li><a href="#required-fields"><span class="secno">4.1.1</span> <span class="content">Required Fields</span></a>
-        <li><a href="#optional-fields"><span class="secno">4.1.2</span> <span class="content">Optional Fields</span></a>
-       </ol>
-      <li>
-       <a href="#nested-shapes-and-component-types"><span class="secno">4.2</span> <span class="content">Nested Shapes and Component Types</span></a>
-       <ol class="toc">
-        <li><a href="#use-of-shclass-and-shtargetclass"><span class="secno">4.2.1</span> <span class="content">Use of sh:class and <code>sh:targetClass</code></span></a>
-        <li><a href="#special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">4.2.2</span> <span class="content">Special Component Types: rdfc:Reader and rdfc:Writer</span></a>
-       </ol>
-      <li><a href="#example-putting-it-all-together"><span class="secno">4.3</span> <span class="content">Example: Putting it all together</span></a>
+      <li><a href="#pipeline"><span class="secno">4.1</span> <span class="content">Pipeline</span></a>
+      <li><a href="#processor"><span class="secno">4.2</span> <span class="content">Processor</span></a>
+      <li><a href="#runner"><span class="secno">4.3</span> <span class="content">Runner</span></a>
+      <li><a href="#orchestrator"><span class="secno">4.4</span> <span class="content">Orchestrator</span></a>
+      <li><a href="#reader-writer"><span class="secno">4.5</span> <span class="content">Reader / Writer</span></a>
      </ol>
     <li><a href="#getting-started"><span class="secno">5</span> <span class="content">Getting Started</span></a>
     <li>
-     <a href="#rdf-connect-by-layer"><span class="secno">6</span> <span class="content">RDF Connect by Layer</span></a>
+     <a href="#shacl-as-configuration-schema"><span class="secno">6</span> <span class="content">SHACL as Configuration Schema</span></a>
      <ol class="toc">
-      <li><a href="#runner①"><span class="secno">6.1</span> <span class="content">Runner</span></a>
-      <li><a href="#processor①"><span class="secno">6.2</span> <span class="content">Processor</span></a>
-      <li><a href="#used-in-pipelines"><span class="secno">6.3</span> <span class="content">Used In Pipelines</span></a>
-      <li><a href="#pipeline①"><span class="secno">6.4</span> <span class="content">Pipeline</span></a>
+      <li>
+       <a href="#mapping-shacl-to-configuration-structures"><span class="secno">6.1</span> <span class="content">Mapping SHACL to Configuration Structures</span></a>
+       <ol class="toc">
+        <li><a href="#required-fields"><span class="secno">6.1.1</span> <span class="content">Required Fields</span></a>
+        <li><a href="#optional-fields"><span class="secno">6.1.2</span> <span class="content">Optional Fields</span></a>
+       </ol>
+      <li>
+       <a href="#nested-shapes-and-component-types"><span class="secno">6.2</span> <span class="content">Nested Shapes and Component Types</span></a>
+       <ol class="toc">
+        <li><a href="#use-of-shclass-and-shtargetclass"><span class="secno">6.2.1</span> <span class="content">Use of sh:class and <code>sh:targetClass</code></span></a>
+        <li><a href="#special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">6.2.2</span> <span class="content">Special Component Types: rdfc:Reader and rdfc:Writer</span></a>
+       </ol>
+      <li><a href="#example-putting-it-all-together"><span class="secno">6.3</span> <span class="content">Example: Putting it all together</span></a>
      </ol>
-    <li><a href="#ontology-reference"><span class="secno">7</span> <span class="content">Ontology Reference</span></a>
     <li>
-     <a href="#usage-paths"><span class="secno">8</span> <span class="content">Usage Paths</span></a>
+     <a href="#rdf-connect-by-layer"><span class="secno">7</span> <span class="content">RDF Connect by Layer</span></a>
      <ol class="toc">
-      <li><a href="#putting-it-all-together-example-flow-and-use-case"><span class="secno">8.1</span> <span class="content">Putting It All Together: Example Flow and Use Case</span></a>
+      <li>
+       <a href="#orchestrator①"><span class="secno">7.1</span> <span class="content">Orchestrator</span></a>
+       <ol class="toc">
+        <li><a href="#protobuf-messaging-protocol"><span class="secno">7.1.1</span> <span class="content">Protobuf Messaging Protocol</span></a>
+        <li><a href="#startup-flow"><span class="secno">7.1.2</span> <span class="content">Startup Flow</span></a>
+        <li><a href="#message-handling-flow"><span class="secno">7.1.3</span> <span class="content">Message Handling Flow</span></a>
+        <li><a href="#streaming-messages"><span class="secno">7.1.4</span> <span class="content">Streaming Messages</span></a>
+       </ol>
+      <li><a href="#runner①"><span class="secno">7.2</span> <span class="content">Runner</span></a>
+      <li><a href="#processor①"><span class="secno">7.3</span> <span class="content">Processor</span></a>
+      <li><a href="#used-in-pipelines"><span class="secno">7.4</span> <span class="content">Used In Pipelines</span></a>
+      <li><a href="#pipeline①"><span class="secno">7.5</span> <span class="content">Pipeline</span></a>
      </ol>
+    <li><a href="#ontology-reference"><span class="secno">8</span> <span class="content">Ontology Reference</span></a>
+    <li><a href="#putting-it-all-together-example-flow-and-use-case"><span class="secno">9</span> <span class="content">Putting It All Together: Example Flow and Use Case</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content"> Conformance</span></a>
     <li>
      <a href="#references"><span class="secno"></span> <span class="content">References</span></a>
@@ -2089,6 +2097,7 @@ Parts of this work may be from another specification document.  If so, those par
       <li><a href="#normative"><span class="secno"></span> <span class="content">Normative References</span></a>
       <li><a href="#informative"><span class="secno"></span> <span class="content">Informative References</span></a>
      </ol>
+    <li><a href="#issues-index"><span class="secno"></span> <span class="content">Issues Index</span></a>
    </ol>
   </nav>
   <main>
@@ -2096,7 +2105,19 @@ Parts of this work may be from another specification document.  If so, those par
    <p>RDF Connect is a modular framework for building and executing multilingual data processing pipelines using RDF as the configuration and orchestration layer.</p>
    <p>It enables fine-grained, reusable processor components that exchange streaming data, allowing workflows to be described declaratively across programming languages and environments.
 RDF Connect is especially well suited for data transformation, integration, and linked data publication.</p>
-   <h2 class="heading settled" data-level="2" id="design-goals"><span class="secno">2. </span><span class="content">Design Goals</span><a class="self-link" href="#design-goals"></a></h2>
+   <h2 class="heading settled" data-level="2" id="usage-paths"><span class="secno">2. </span><span class="content">Usage Paths</span><a class="self-link" href="#usage-paths"></a></h2>
+   <div class="note" role="note"> This section is complete in terms of content, but may be reorganized or rewritten for clarity during editorial review. </div>
+   <p>Depending on your use case, you may only need a subset of this specification:</p>
+   <ul>
+    <li data-md>
+     <p><strong>Pipeline Authors</strong>: Start with <a href="#getting-started">§ 5 Getting Started</a> and focus on <a href="#pipeline">§ 4.1 Pipeline</a>.</p>
+    <li data-md>
+     <p><strong>Processor Developers</strong>: Read <a href="#processor">§ 4.2 Processor</a> and <a href="#runner">§ 4.3 Runner</a>.</p>
+    <li data-md>
+     <p><strong>Platform Maintainers</strong>: Read all sections, including implementation notes.</p>
+   </ul>
+   <h2 class="heading settled" data-level="3" id="design-goals"><span class="secno">3. </span><span class="content">Design Goals</span><a class="self-link" href="#design-goals"></a></h2>
+   <div class="note" role="note"> This section is complete in terms of content, but may be reorganized or rewritten for clarity during editorial review. </div>
    <ul>
     <li data-md>
      <p><strong>Language Agnosticism</strong>: Integrate processor components written in different languages (e.g., JavaScript, Python, shell).</p>
@@ -2111,20 +2132,34 @@ RDF Connect is especially well suited for data transformation, integration, and 
     <li data-md>
      <p><strong>Lineage</strong>: Achieve native <code>prov-o</code> provenance information.</p>
    </ul>
-   <h2 class="heading settled" data-level="3" id="concepts"><span class="secno">3. </span><span class="content">Concepts</span><a class="self-link" href="#concepts"></a></h2>
+   <h2 class="heading settled" data-level="4" id="concepts"><span class="secno">4. </span><span class="content">Concepts</span><a class="self-link" href="#concepts"></a></h2>
    <p>This section introduces the core concepts of the RDF Connect framework.</p>
-   <h3 class="heading settled" data-level="3.1" id="pipeline"><span class="secno">3.1. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline"></a></h3>
+   <h3 class="heading settled" data-level="4.1" id="pipeline"><span class="secno">4.1. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline"></a></h3>
    <p>A pipeline defines an sequence of data transformation steps.
 Each step connects one or more processors with associated runners and configuration parameters.</p>
-   <h3 class="heading settled" data-level="3.2" id="processor"><span class="secno">3.2. </span><span class="content">Processor</span><a class="self-link" href="#processor"></a></h3>
+   <h3 class="heading settled" data-level="4.2" id="processor"><span class="secno">4.2. </span><span class="content">Processor</span><a class="self-link" href="#processor"></a></h3>
    <p>A processor is a reusable software component that accepts input data, transforms it, and emits output data.
 Processors can be written in any language and executed with a runner.</p>
-   <h3 class="heading settled" data-level="3.3" id="runner"><span class="secno">3.3. </span><span class="content">Runner</span><a class="self-link" href="#runner"></a></h3>
+   <h3 class="heading settled" data-level="4.3" id="runner"><span class="secno">4.3. </span><span class="content">Runner</span><a class="self-link" href="#runner"></a></h3>
    <p>A runner is an execution strategy for processors — for example, a processor in Javascript is a class that is started using a <code>NodeRunner</code>.</p>
-   <h3 class="heading settled" data-level="3.4" id="reader-writer"><span class="secno">3.4. </span><span class="content">Reader / Writer</span><a class="self-link" href="#reader-writer"></a></h3>
+   <h3 class="heading settled" data-level="4.4" id="orchestrator"><span class="secno">4.4. </span><span class="content">Orchestrator</span><a class="self-link" href="#orchestrator"></a></h3>
+   <p>The orchestrator is the core component responsible for executing a pipeline.
+It reads the configuration, initializes runners, dispatches processor instantiations, and coordinates data flow between them. 
+It acts as the runtime conductor that interprets RDF Connect’s declarative configuration.</p>
+   <h3 class="heading settled" data-level="4.5" id="reader-writer"><span class="secno">4.5. </span><span class="content">Reader / Writer</span><a class="self-link" href="#reader-writer"></a></h3>
    <p>Readers and Writers are components that define how data is streamed into and out of a processor.
 These provide an idiomatic way to transport streaming data  between processors.</p>
-   <h2 class="heading settled" data-level="4" id="shacl-as-configuration-schema"><span class="secno">4. </span><span class="content">SHACL as Configuration Schema</span><a class="self-link" href="#shacl-as-configuration-schema"></a></h2>
+   <h2 class="heading settled" data-level="5" id="getting-started"><span class="secno">5. </span><span class="content">Getting Started</span><a class="self-link" href="#getting-started"></a></h2>
+   <div class="issue" id="issue-4e16af14"><a class="self-link" href="#issue-4e16af14"></a> 🚧 This section is a work in progress and will be expanded soon. </div>
+   <p>This section provides a high-level overview of how to define and run a pipeline in RDF Connect. The rest of the specification provides detail on how each part works.</p>
+   <p>Here’s a simple example:</p>
+<pre class="language-turtle highlight"><c- nn>ex</c-><c- p>:</c-><c- f>pipeline</c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Pipeline</c-> <c- p>;</c->
+    <c- nn>rdfc</c-><c- p>:</c-><c- f>instantiates</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myRunner</c-> <c- p>;</c->
+    <c- nn>rdfc</c-><c- p>:</c-><c- f>processor</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myProcessor</c-> <c- p>.</c->
+</pre>
+   <p>Once a pipeline is fully described using RDF, it is handed off to the orchestrator.
+The orchestrator parses the configuration, resolves all runner and processor definitions, and initiates execution.</p>
+   <h2 class="heading settled" data-level="6" id="shacl-as-configuration-schema"><span class="secno">6. </span><span class="content">SHACL as Configuration Schema</span><a class="self-link" href="#shacl-as-configuration-schema"></a></h2>
    <p>RDF Connect uses SHACL <a data-link-type="biblio" href="#biblio-shacl" title="Shapes Constraint Language (SHACL)">[shacl]</a> not only as a data validation mechanism but also as a schema language for defining the configuration interface of components such as processors and runners.
 These SHACL shapes enable:</p>
    <ul>
@@ -2166,9 +2201,9 @@ These SHACL shapes enable:</p>
 <c- p>}</c->
 </pre>
    </div>
-   <h3 class="heading settled" data-level="4.1" id="mapping-shacl-to-configuration-structures"><span class="secno">4.1. </span><span class="content">Mapping SHACL to Configuration Structures</span><a class="self-link" href="#mapping-shacl-to-configuration-structures"></a></h3>
+   <h3 class="heading settled" data-level="6.1" id="mapping-shacl-to-configuration-structures"><span class="secno">6.1. </span><span class="content">Mapping SHACL to Configuration Structures</span><a class="self-link" href="#mapping-shacl-to-configuration-structures"></a></h3>
    <p>Each <code>sh:property</code> statement in a SHACL shape defines a configuration field with the following interpretation:</p>
-   <h4 class="heading settled" data-level="4.1.1" id="required-fields"><span class="secno">4.1.1. </span><span class="content">Required Fields</span><a class="self-link" href="#required-fields"></a></h4>
+   <h4 class="heading settled" data-level="6.1.1" id="required-fields"><span class="secno">6.1.1. </span><span class="content">Required Fields</span><a class="self-link" href="#required-fields"></a></h4>
    <p><strong>sh:path</strong></p>
    <ul>
     <li data-md>
@@ -2192,7 +2227,7 @@ These SHACL shapes enable:</p>
     <li data-md>
      <p>Use <code>sh:class</code> for nested resources (i.e., objects that are further interpreted according to their own shapes).</p>
    </ul>
-   <h4 class="heading settled" data-level="4.1.2" id="optional-fields"><span class="secno">4.1.2. </span><span class="content">Optional Fields</span><a class="self-link" href="#optional-fields"></a></h4>
+   <h4 class="heading settled" data-level="6.1.2" id="optional-fields"><span class="secno">6.1.2. </span><span class="content">Optional Fields</span><a class="self-link" href="#optional-fields"></a></h4>
    <p><strong>sh:minCount</strong></p>
    <ul>
     <li data-md>
@@ -2217,7 +2252,7 @@ These SHACL shapes enable:</p>
        <p>If <code>sh:maxCount > 1</code> or is unspecified, the resulting field is an array (<code>T[]</code>).</p>
      </ul>
    </ul>
-   <h3 class="heading settled" data-level="4.2" id="nested-shapes-and-component-types"><span class="secno">4.2. </span><span class="content">Nested Shapes and Component Types</span><a class="self-link" href="#nested-shapes-and-component-types"></a></h3>
+   <h3 class="heading settled" data-level="6.2" id="nested-shapes-and-component-types"><span class="secno">6.2. </span><span class="content">Nested Shapes and Component Types</span><a class="self-link" href="#nested-shapes-and-component-types"></a></h3>
    <p>Configuration fields can reference structured values instead of primitive literals.
 This is supported via <code>sh:class</code>, which indicates that the value must conform to another shape associated with a given RDF class.</p>
    <p>For example:</p>
@@ -2228,7 +2263,7 @@ This is supported via <code>sh:class</code>, which indicates that the value must
 <c- p>]</c->
 </pre>
    <p>This declares a configuration field named input whose value is an instance of <code>rdfc:Reader</code>.</p>
-   <h4 class="heading settled" data-level="4.2.1" id="use-of-shclass-and-shtargetclass"><span class="secno">4.2.1. </span><span class="content">Use of sh:class and <code>sh:targetClass</code></span><a class="self-link" href="#use-of-shclass-and-shtargetclass"></a></h4>
+   <h4 class="heading settled" data-level="6.2.1" id="use-of-shclass-and-shtargetclass"><span class="secno">6.2.1. </span><span class="content">Use of sh:class and <code>sh:targetClass</code></span><a class="self-link" href="#use-of-shclass-and-shtargetclass"></a></h4>
    <ul>
     <li data-md>
      <p><code>sh:class</code> is used in a property constraint to indicate the expected class of the object (i.e., the RDF resource at that property).</p>
@@ -2238,7 +2273,7 @@ This is supported via <code>sh:class</code>, which indicates that the value must
      <p>In RDF Connect, <code>sh:targetClass</code> shapes define reusable schemas for configuration blocks that can be nested using sh:class.</p>
    </ul>
    <p>This allows composable, type-safe configuration structures where nested components follow their own validation and extraction rules.</p>
-   <h4 class="heading settled" data-level="4.2.2" id="special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">4.2.2. </span><span class="content">Special Component Types: rdfc:Reader and rdfc:Writer</span><a class="self-link" href="#special-component-types-rdfcreader-and-rdfcwriter"></a></h4>
+   <h4 class="heading settled" data-level="6.2.2" id="special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">6.2.2. </span><span class="content">Special Component Types: rdfc:Reader and rdfc:Writer</span><a class="self-link" href="#special-component-types-rdfcreader-and-rdfcwriter"></a></h4>
    <p><code>rdfc:Reader</code> and <code>rdfc:Writer</code> are special component types in RDF Connect.
 Unlike generic nested objects, these represent runtime injection points for data input and output, respectively.</p>
    <ul>
@@ -2257,7 +2292,7 @@ Unlike generic nested objects, these represent runtime injection points for data
 </pre>
    <p>This configuration ensures that the processor receives a data source named input, which will be resolved by the runner and injected into the processor’s runtime context.</p>
    <p>This approach enables loose coupling between declarative pipeline configuration and concrete data-flow mechanisms.</p>
-   <h3 class="heading settled" data-level="4.3" id="example-putting-it-all-together"><span class="secno">4.3. </span><span class="content">Example: Putting it all together</span><a class="self-link" href="#example-putting-it-all-together"></a></h3>
+   <h3 class="heading settled" data-level="6.3" id="example-putting-it-all-together"><span class="secno">6.3. </span><span class="content">Example: Putting it all together</span><a class="self-link" href="#example-putting-it-all-together"></a></h3>
    <p>The following example SHACL shape could accompany a FooBar processor that appends text to each incoming message and echos it to the next channel.</p>
 <pre class="language-turtle highlight"><c- p>[</c-> <c- p>]</c-> <c- b>a</c-> <c- nn>sh</c-><c- p>:</c-><c- f>NodeShape</c-><c- p>;</c->
   <c- nn>sh</c-><c- p>:</c-><c- f>targetClass</c-> <c- p>:</c-><c- f>Channels</c-><c- p>;</c->
@@ -2315,40 +2350,119 @@ Unlike generic nested objects, these represent runtime injection points for data
   append<c- o>:</c-> <c- u>" World!"</c->
 <c- p>}</c->
 </pre>
-   <h2 class="heading settled" data-level="5" id="getting-started"><span class="secno">5. </span><span class="content">Getting Started</span><a class="self-link" href="#getting-started"></a></h2>
-   <p>This section provides a high-level overview of how to define and run a pipeline in RDF Connect. The rest of the specification provides detail on how each part works.</p>
-   <p>Here’s a simple example:</p>
-<pre class="language-turtle highlight"><c- nn>ex</c-><c- p>:</c-><c- f>pipeline</c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Pipeline</c-> <c- p>;</c->
-    <c- nn>rdfc</c-><c- p>:</c-><c- f>instantiates</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myRunner</c-> <c- p>;</c->
-    <c- nn>rdfc</c-><c- p>:</c-><c- f>processor</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myProcessor</c-> <c- p>.</c->
-</pre>
-   <h2 class="heading settled" data-level="6" id="rdf-connect-by-layer"><span class="secno">6. </span><span class="content">RDF Connect by Layer</span><a class="self-link" href="#rdf-connect-by-layer"></a></h2>
-   <h3 class="heading settled" data-level="6.1" id="runner①"><span class="secno">6.1. </span><span class="content">Runner</span><a class="self-link" href="#runner①"></a></h3>
+   <h2 class="heading settled" data-level="7" id="rdf-connect-by-layer"><span class="secno">7. </span><span class="content">RDF Connect by Layer</span><a class="self-link" href="#rdf-connect-by-layer"></a></h2>
+   <h3 class="heading settled" data-level="7.1" id="orchestrator①"><span class="secno">7.1. </span><span class="content">Orchestrator</span><a class="self-link" href="#orchestrator①"></a></h3>
+   <p>The orchestrator is the central runtime entity in RDF Connect.
+It reads the pipeline configuration, sets up the runners, initiates processors, and routes messages between them.
+It ensures the dataflow graph described by the pipeline is brought to life across isolated runtimes.
+The orchestrator acts as a coordinator, not an executor. Each runner is responsible for running the actual processor code, but the orchestrator ensures the pipeline as a whole behaves as intended.</p>
+   <p>Responsibilities:</p>
+   <ul>
+    <li data-md>
+     <p>Parse the pipeline RDF.</p>
+    <li data-md>
+     <p>Load SHACL shapes for processors and runners.</p>
+    <li data-md>
+     <p>Validate and coerce configuration to structured JSON.</p>
+    <li data-md>
+     <p>Instantiate runners.</p>
+    <li data-md>
+     <p>Start processors.</p>
+    <li data-md>
+     <p>Mediate messages (data and control).</p>
+    <li data-md>
+     <p>Handle retries, streaming, and backpressure.</p>
+   </ul>
+   <div class="note" role="note"> The remained of this section is intended for developers building custom runners or integrating RDF Connect into infrastructure. </div>
+   <h4 class="heading settled" data-level="7.1.1" id="protobuf-messaging-protocol"><span class="secno">7.1.1. </span><span class="content">Protobuf Messaging Protocol</span><a class="self-link" href="#protobuf-messaging-protocol"></a></h4>
+   <p>Communication between the orchestrator and the runners happens using a strongly typed protocol defined in Protocol Buffers (protobuf).
+This enables language-independent and efficient communication across processes and machines.</p>
+   <h4 class="heading settled" data-level="7.1.2" id="startup-flow"><span class="secno">7.1.2. </span><span class="content">Startup Flow</span><a class="self-link" href="#startup-flow"></a></h4>
+   <p>The following diagram describes the startup sequence handled by the orchestrator. This includes validating pipeline structure, instantiating runners, and initializing processor instances.</p>
+   <div class="mermaid"> sequenceDiagram
+    autonumber
+    participant O as Orchestrator
+    participant R as Runner
+    participant P as Processor
+    Note over O: Discovered Runners<br>and processors
+    loop For every runner
+        Note over R: Runner is started with cli
+        O-->>R: Startup with address and uri
+        R-->>O: RPC.Identify: with uri
+    end
+    loop For every processor
+        O-->>R: RPC.Processor: Start processor
+        Note over P: Load module and class
+        R-->>P: Load processor
+        R-->>P: Start processor with args
+        R-->>O: RPC.ProcessorInit: processor started
+    end
+    loop For every runner
+        O-->>R: RPC.Start: Start
+        loop For every Processor
+            R-->>P: Start
+        end
+    end </div>
+   <h4 class="heading settled" data-level="7.1.3" id="message-handling-flow"><span class="secno">7.1.3. </span><span class="content">Message Handling Flow</span><a class="self-link" href="#message-handling-flow"></a></h4>
+   <p>Once processors are running, the orchestrator handles incoming messages and forwards them to the appropriate reader instances, based on their declared channels.</p>
+   <div class="mermaid"> sequenceDiagram
+    participant P1 as Processor 1
+    participant R1 as Runner 1
+    participant O as Orchestrator
+    participant R2 as Runner 2
+    participant P2 as Processor 2
+    P1-->>R1: Msg to Channel A
+    R1-->>O: Msg to Channel A
+    Note over O: Channel A is connected<br>to processor of Runner 2
+    O -->> R2: Msg to Channel A
+    R2-->>P2: Msg to Channel A </div>
+   <h4 class="heading settled" data-level="7.1.4" id="streaming-messages"><span class="secno">7.1.4. </span><span class="content">Streaming Messages</span><a class="self-link" href="#streaming-messages"></a></h4>
+   <p>For large messages or real-time input, RDF Connect supports a streaming model.
+Instead of sending entire payloads as a single message, the message can be broken into chunks and sends them over time. 
+This is handled by the StreamChunk message type.</p>
+   <div class="mermaid"> sequenceDiagram
+    autonumber
+    participant P1 as Processor 1
+    participant R1 as Runner 1
+    participant O as Orchestrator
+    participant R2 as Runner 2
+    participant P2 as Processor 2
+    P1 -->> R1: Send streaming<br>message
+    critical Start stream message
+        R1 ->> O: rpc.sendStreamMessage<br>(bidirectional stream)
+        O -->> R1: sends generated ID<br>of stream message
+        R1 -->> O: announce StreamMessage<br>with ID over normal stream
+        O -->> R2: announce StreamMessage<br>with ID over normal stream
+        R2 ->> O: rpc.receiveMessage with Id<br>starts receiving stream
+        R2 -->> P2: incoming stream message
+    end
+    loop Streams data
+        P1 -->> R1: Data chunks
+        R1 -->> O: Data chunks over stream
+        O -->> R2: Data chunks over stream
+        R2 -->>P2: Data chnuks
+    end </div>
+   <h3 class="heading settled" data-level="7.2" id="runner①"><span class="secno">7.2. </span><span class="content">Runner</span><a class="self-link" href="#runner①"></a></h3>
    <p>A runner describes how to execute a processor. Most users will reuse existing runners, such as NodeRunner or BashRunner.</p>
    <p>You only need to write your own runner if you’re integrating a new execution environment.</p>
-   <h3 class="heading settled" data-level="6.2" id="processor①"><span class="secno">6.2. </span><span class="content">Processor</span><a class="self-link" href="#processor①"></a></h3>
+   <h3 class="heading settled" data-level="7.3" id="processor①"><span class="secno">7.3. </span><span class="content">Processor</span><a class="self-link" href="#processor①"></a></h3>
    <p>A processor is the reusable data transformation component. Each processor must be associated with a runner.</p>
    <p>Even if you’re not writing processors yourself, you may need to understand this section to configure one.</p>
-   <h3 class="heading settled" data-level="6.3" id="used-in-pipelines"><span class="secno">6.3. </span><span class="content">Used In Pipelines</span><a class="self-link" href="#used-in-pipelines"></a></h3>
+   <h3 class="heading settled" data-level="7.4" id="used-in-pipelines"><span class="secno">7.4. </span><span class="content">Used In Pipelines</span><a class="self-link" href="#used-in-pipelines"></a></h3>
    <p>Once defined, a processor can be linked into a pipeline via the <code>rdfc:processor</code> property.</p>
 <pre class="language-turtle highlight"><c- nn>rdfc</c-><c- p>:</c-><c- f>processor</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myProcessor</c-> <c- p>.</c->
 </pre>
-   <h3 class="heading settled" data-level="6.4" id="pipeline①"><span class="secno">6.4. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline①"></a></h3>
+   <h3 class="heading settled" data-level="7.5" id="pipeline①"><span class="secno">7.5. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline①"></a></h3>
    <p>Pipelines connect processors using runners to form a processing graph.</p>
    <p>This is the main unit most users interact with when defining workflows.</p>
-   <h2 class="heading settled" data-level="7" id="ontology-reference"><span class="secno">7. </span><span class="content">Ontology Reference</span><a class="self-link" href="#ontology-reference"></a></h2>
+   <h2 class="heading settled" data-level="8" id="ontology-reference"><span class="secno">8. </span><span class="content">Ontology Reference</span><a class="self-link" href="#ontology-reference"></a></h2>
    <p>The RDF Connect ontology provides the terms used in RDF pipeline definitions. See the full <a href="https://w3id.org/rdf-connect/ontology.ttl">RDF Connect Ontology</a> for details.</p>
-   <h2 class="heading settled" data-level="8" id="usage-paths"><span class="secno">8. </span><span class="content">Usage Paths</span><a class="self-link" href="#usage-paths"></a></h2>
-   <p>Depending on your use case, you may only need a subset of this specification:</p>
-   <ul>
-    <li data-md>
-     <p><strong>Pipeline Authors</strong>: Start with <a href="#getting-started">§ 5 Getting Started</a> and focus on <a href="#pipeline">§ 3.1 Pipeline</a>.</p>
-    <li data-md>
-     <p><strong>Processor Developers</strong>: Read <a href="#processor">§ 3.2 Processor</a> and <a href="#runner">§ 3.3 Runner</a>.</p>
-    <li data-md>
-     <p><strong>Platform Maintainers</strong>: Read all sections, including implementation notes.</p>
-   </ul>
-   <h3 class="heading settled" data-level="8.1" id="putting-it-all-together-example-flow-and-use-case"><span class="secno">8.1. </span><span class="content">Putting It All Together: Example Flow and Use Case</span><a class="self-link" href="#putting-it-all-together-example-flow-and-use-case"></a></h3>
+   <h2 class="heading settled" data-level="9" id="putting-it-all-together-example-flow-and-use-case"><span class="secno">9. </span><span class="content">Putting It All Together: Example Flow and Use Case</span><a class="self-link" href="#putting-it-all-together-example-flow-and-use-case"></a></h2>
+   <div class="issue" id="issue-4e16af14①"><a class="self-link" href="#issue-4e16af14①"></a> 🚧 This section is a work in progress and will be expanded soon. </div>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
   </main>
   <div data-fill-with="conformance">
    <h2 class="no-ref no-num heading settled" id="conformance"><span class="content"> Conformance</span><a class="self-link" href="#conformance"></a></h2>
@@ -2507,3 +2621,8 @@ Unlike generic nested objects, these represent runtime injection points for data
    <dt id="biblio-shacl">[SHACL]
    <dd>Holger Knublauch; Dimitris Kontokostas. <a href="https://w3c.github.io/data-shapes/shacl/"><cite>Shapes Constraint Language (SHACL)</cite></a>. URL: <a href="https://w3c.github.io/data-shapes/shacl/">https://w3c.github.io/data-shapes/shacl/</a>
   </dl>
+  <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
+  <div style="counter-reset:issue">
+   <div class="issue"> 🚧 This section is a work in progress and will be expanded soon. <a class="issue-return" href="#issue-4e16af14" title="Jump to section">↵</a></div>
+   <div class="issue"> 🚧 This section is a work in progress and will be expanded soon. <a class="issue-return" href="#issue-4e16af14①" title="Jump to section">↵</a></div>
+  </div>
