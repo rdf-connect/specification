@@ -1,7 +1,7 @@
 <!doctype html><html lang="en">
  <head>
   <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  <title>RDF Connect Specification</title>
+  <title>RDF-Connect Specification</title>
   <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport">
 <style data-fill-with="stylesheet">/******************************************************************************
  *                   Style sheet for the W3C specifications                   *
@@ -1489,7 +1489,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version b25686b9f, updated Fri Mar 14 14:15:20 2025 -0700" name="generator">
-  <meta content="9d0983fee38a0f5f58afa672b93d63cfb001f2a1" name="revision">
+  <meta content="cf4c362901d3ef3bafae9da22465faef4e1ef5e6" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" rel="stylesheet">
 <style>/* Boilerplate: style-autolinks */
@@ -2014,7 +2014,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
  <body class="h-entry">
   <div class="head">
    <p data-fill-with="logo"></p>
-   <h1 class="p-name no-ref" id="title">RDF Connect Specification</h1>
+   <h1 class="p-name no-ref" id="title">RDF-Connect Specification</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Living Standard, <time class="dt-updated" datetime="2025-05-15">15 May 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
@@ -2022,7 +2022,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
      <dd><a href="https://github.com/your-org/rdf-connect/issues/">GitHub</a>
      <dd><a href="#issues-index">Inline In Spec</a>
      <dt class="editor">Editor:
-     <dd class="editor p-author h-card vcard"><a class="p-name fn u-url url" href="https://example.org">RDF Connect Team</a>
+     <dd class="editor p-author h-card vcard"><a class="p-name fn u-url url" href="https://example.org">RDF-Connect Team</a>
     </dl>
    </div>
    <div data-fill-with="warning"></div>
@@ -2073,7 +2073,7 @@ Parts of this work may be from another specification document.  If so, those par
       <li><a href="#example-putting-it-all-together"><span class="secno">6.3</span> <span class="content">Example: Putting it all together</span></a>
      </ol>
     <li>
-     <a href="#rdf-connect-by-layer"><span class="secno">7</span> <span class="content">RDF Connect by Layer</span></a>
+     <a href="#rdf-connect-by-layer"><span class="secno">7</span> <span class="content">RDF-Connect by Layer</span></a>
      <ol class="toc">
       <li>
        <a href="#orchestrator①"><span class="secno">7.1</span> <span class="content">Orchestrator</span></a>
@@ -2102,9 +2102,9 @@ Parts of this work may be from another specification document.  If so, those par
   </nav>
   <main>
    <h2 class="heading settled" data-level="1" id="introduction"><span class="secno">1. </span><span class="content">Introduction</span><a class="self-link" href="#introduction"></a></h2>
-   <p>RDF Connect is a modular framework for building and executing multilingual data processing pipelines using RDF as the configuration and orchestration layer.</p>
+   <p>RDF-Connect is a modular framework for building and executing multilingual data processing pipelines using RDF as the configuration and orchestration layer.</p>
    <p>It enables fine-grained, reusable processor components that exchange streaming data, allowing workflows to be described declaratively across programming languages and environments.
-RDF Connect is especially well suited for data transformation, integration, and linked data publication.</p>
+RDF-Connect is especially well suited for data transformation, integration, and linked data publication.</p>
    <h2 class="heading settled" data-level="2" id="usage-paths"><span class="secno">2. </span><span class="content">Usage Paths</span><a class="self-link" href="#usage-paths"></a></h2>
    <div class="note" role="note"> This section is complete in terms of content, but may be reorganized or rewritten for clarity during editorial review. </div>
    <p>Depending on your use case, you may only need a subset of this specification:</p>
@@ -2133,7 +2133,7 @@ RDF Connect is especially well suited for data transformation, integration, and 
      <p><strong>Lineage</strong>: Achieve native <code>prov-o</code> provenance information.</p>
    </ul>
    <h2 class="heading settled" data-level="4" id="concepts"><span class="secno">4. </span><span class="content">Concepts</span><a class="self-link" href="#concepts"></a></h2>
-   <p>This section introduces the core concepts of the RDF Connect framework.</p>
+   <p>This section introduces the core concepts of the RDF-Connect framework.</p>
    <h3 class="heading settled" data-level="4.1" id="pipeline"><span class="secno">4.1. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline"></a></h3>
    <p>A pipeline defines an sequence of data transformation steps.
 Each step connects one or more processors with associated runners and configuration parameters.</p>
@@ -2145,13 +2145,13 @@ Processors can be written in any language and executed with a runner.</p>
    <h3 class="heading settled" data-level="4.4" id="orchestrator"><span class="secno">4.4. </span><span class="content">Orchestrator</span><a class="self-link" href="#orchestrator"></a></h3>
    <p>The orchestrator is the core component responsible for executing a pipeline.
 It reads the configuration, initializes runners, dispatches processor instantiations, and coordinates data flow between them. 
-It acts as the runtime conductor that interprets RDF Connect’s declarative configuration.</p>
+It acts as the runtime conductor that interprets RDF-Connect’s declarative configuration.</p>
    <h3 class="heading settled" data-level="4.5" id="reader-writer"><span class="secno">4.5. </span><span class="content">Reader / Writer</span><a class="self-link" href="#reader-writer"></a></h3>
    <p>Readers and Writers are components that define how data is streamed into and out of a processor.
 These provide an idiomatic way to transport streaming data  between processors.</p>
    <h2 class="heading settled" data-level="5" id="getting-started"><span class="secno">5. </span><span class="content">Getting Started</span><a class="self-link" href="#getting-started"></a></h2>
    <div class="issue" id="issue-4e16af14"><a class="self-link" href="#issue-4e16af14"></a> 🚧 This section is a work in progress and will be expanded soon. </div>
-   <p>This section provides a high-level overview of how to define and run a pipeline in RDF Connect. The rest of the specification provides detail on how each part works.</p>
+   <p>This section provides a high-level overview of how to define and run a pipeline in RDF-Connect. The rest of the specification provides detail on how each part works.</p>
    <p>Here’s a simple example:</p>
 <pre class="language-turtle highlight"><c- nn>ex</c-><c- p>:</c-><c- f>pipeline</c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Pipeline</c-> <c- p>;</c->
     <c- nn>rdfc</c-><c- p>:</c-><c- f>instantiates</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myRunner</c-> <c- p>;</c->
@@ -2160,7 +2160,7 @@ These provide an idiomatic way to transport streaming data  between processors.<
    <p>Once a pipeline is fully described using RDF, it is handed off to the orchestrator.
 The orchestrator parses the configuration, resolves all runner and processor definitions, and initiates execution.</p>
    <h2 class="heading settled" data-level="6" id="shacl-as-configuration-schema"><span class="secno">6. </span><span class="content">SHACL as Configuration Schema</span><a class="self-link" href="#shacl-as-configuration-schema"></a></h2>
-   <p>RDF Connect uses SHACL <a data-link-type="biblio" href="#biblio-shacl" title="Shapes Constraint Language (SHACL)">[shacl]</a> not only as a data validation mechanism but also as a schema language for defining the configuration interface of components such as processors and runners.
+   <p>RDF-Connect uses SHACL <a data-link-type="biblio" href="#biblio-shacl" title="Shapes Constraint Language (SHACL)">[shacl]</a> not only as a data validation mechanism but also as a schema language for defining the configuration interface of components such as processors and runners.
 These SHACL shapes enable:</p>
    <ul>
     <li data-md>
@@ -2171,9 +2171,9 @@ These SHACL shapes enable:</p>
      <p>Type-safe interpretation in environments like JavaScript/TypeScript.</p>
    </ul>
    <p>Shapes define required and optional configuration properties, which are transformed into JSON objects at startup, according to the pipeline.</p>
-   <div class="example" id="example-a6c81095" title="From SHACL to JSON configuration">
-    <a class="self-link" href="#example-a6c81095"></a> This SHACL shape definition defines a configuration structure for a processor.
-    In RDF Connect, such shapes are used to describe required parameters.
+   <div class="example" id="example-1373adae" title="From SHACL to JSON configuration">
+    <a class="self-link" href="#example-1373adae"></a> This SHACL shape definition defines a configuration structure for a processor.
+    In RDF-Connect, such shapes are used to describe required parameters.
     They result in a well-typed JSON object that developers can rely on during implementation. 
     <p>Shacl shape defining some required configuration for a processor</p>
 <pre class="language-turtle highlight"><c- p>[]</c-> <c- b>a</c-> <c- nn>sh</c-><c- p>:</c-><c- f>NodeShape</c-><c- p>;</c->
@@ -2270,11 +2270,11 @@ This is supported via <code>sh:class</code>, which indicates that the value must
     <li data-md>
      <p><code>sh:targetClass</code> is used on a <code>sh:NodeShape</code> to associate it with a class, so that tools can look up the shape when encountering a value with that class.</p>
     <li data-md>
-     <p>In RDF Connect, <code>sh:targetClass</code> shapes define reusable schemas for configuration blocks that can be nested using sh:class.</p>
+     <p>In RDF-Connect, <code>sh:targetClass</code> shapes define reusable schemas for configuration blocks that can be nested using sh:class.</p>
    </ul>
    <p>This allows composable, type-safe configuration structures where nested components follow their own validation and extraction rules.</p>
    <h4 class="heading settled" data-level="6.2.2" id="special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">6.2.2. </span><span class="content">Special Component Types: rdfc:Reader and rdfc:Writer</span><a class="self-link" href="#special-component-types-rdfcreader-and-rdfcwriter"></a></h4>
-   <p><code>rdfc:Reader</code> and <code>rdfc:Writer</code> are special component types in RDF Connect.
+   <p><code>rdfc:Reader</code> and <code>rdfc:Writer</code> are special component types in RDF-Connect.
 Unlike generic nested objects, these represent runtime injection points for data input and output, respectively.</p>
    <ul>
     <li data-md>
@@ -2350,9 +2350,9 @@ Unlike generic nested objects, these represent runtime injection points for data
   append<c- o>:</c-> <c- u>" World!"</c->
 <c- p>}</c->
 </pre>
-   <h2 class="heading settled" data-level="7" id="rdf-connect-by-layer"><span class="secno">7. </span><span class="content">RDF Connect by Layer</span><a class="self-link" href="#rdf-connect-by-layer"></a></h2>
+   <h2 class="heading settled" data-level="7" id="rdf-connect-by-layer"><span class="secno">7. </span><span class="content">RDF-Connect by Layer</span><a class="self-link" href="#rdf-connect-by-layer"></a></h2>
    <h3 class="heading settled" data-level="7.1" id="orchestrator①"><span class="secno">7.1. </span><span class="content">Orchestrator</span><a class="self-link" href="#orchestrator①"></a></h3>
-   <p>The orchestrator is the central runtime entity in RDF Connect.
+   <p>The orchestrator is the central runtime entity in RDF-Connect.
 It reads the pipeline configuration, sets up the runners, initiates processors, and routes messages between them.
 It ensures the dataflow graph described by the pipeline is brought to life across isolated runtimes.
 The orchestrator acts as a coordinator, not an executor. Each runner is responsible for running the actual processor code, but the orchestrator ensures the pipeline as a whole behaves as intended.</p>
@@ -2373,7 +2373,7 @@ The orchestrator acts as a coordinator, not an executor. Each runner is responsi
     <li data-md>
      <p>Handle retries, streaming, and backpressure.</p>
    </ul>
-   <div class="note" role="note"> The remained of this section is intended for developers building custom runners or integrating RDF Connect into infrastructure. </div>
+   <div class="note" role="note"> The remained of this section is intended for developers building custom runners or integrating RDF-Connect into infrastructure. </div>
    <h4 class="heading settled" data-level="7.1.1" id="protobuf-messaging-protocol"><span class="secno">7.1.1. </span><span class="content">Protobuf Messaging Protocol</span><a class="self-link" href="#protobuf-messaging-protocol"></a></h4>
    <p>Communication between the orchestrator and the runners happens using a strongly typed protocol defined in Protocol Buffers (protobuf).
 This enables language-independent and efficient communication across processes and machines.</p>
@@ -2417,7 +2417,7 @@ This enables language-independent and efficient communication across processes a
     O -->> R2: Msg to Channel A
     R2-->>P2: Msg to Channel A </div>
    <h4 class="heading settled" data-level="7.1.4" id="streaming-messages"><span class="secno">7.1.4. </span><span class="content">Streaming Messages</span><a class="self-link" href="#streaming-messages"></a></h4>
-   <p>For large messages or real-time input, RDF Connect supports a streaming model.
+   <p>For large messages or real-time input, RDF-Connect supports a streaming model.
 Instead of sending entire payloads as a single message, the message can be broken into chunks and sends them over time. 
 This is handled by the StreamChunk message type.</p>
    <div class="mermaid"> sequenceDiagram
@@ -2456,7 +2456,7 @@ This is handled by the StreamChunk message type.</p>
    <p>Pipelines connect processors using runners to form a processing graph.</p>
    <p>This is the main unit most users interact with when defining workflows.</p>
    <h2 class="heading settled" data-level="8" id="ontology-reference"><span class="secno">8. </span><span class="content">Ontology Reference</span><a class="self-link" href="#ontology-reference"></a></h2>
-   <p>The RDF Connect ontology provides the terms used in RDF pipeline definitions. See the full <a href="https://w3id.org/rdf-connect/ontology.ttl">RDF Connect Ontology</a> for details.</p>
+   <p>The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full <a href="https://w3id.org/rdf-connect/ontology.ttl">RDF-Connect Ontology</a> for details.</p>
    <h2 class="heading settled" data-level="9" id="putting-it-all-together-example-flow-and-use-case"><span class="secno">9. </span><span class="content">Putting It All Together: Example Flow and Use Case</span><a class="self-link" href="#putting-it-all-together-example-flow-and-use-case"></a></h2>
    <div class="issue" id="issue-4e16af14①"><a class="self-link" href="#issue-4e16af14①"></a> 🚧 This section is a work in progress and will be expanded soon. </div>
 <script type="module">
