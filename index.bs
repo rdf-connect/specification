@@ -1,10 +1,10 @@
 <pre class='metadata'>
-Title: RDF Connect Specification
+Title: RDF-Connect Specification
 Shortname: rdfc
 Markup Shorthands: markdown yes
 Level: 1
 Status: LS
-Editor: RDF Connect Team, https://example.org
+Editor: RDF-Connect Team, https://example.org
 Repository: https://github.com/your-org/rdf-connect
 Abstract: Some abstract 
 </pre>
@@ -13,10 +13,10 @@ Abstract: Some abstract
 
 # Introduction
 
-RDF Connect is a modular framework for building and executing multilingual data processing pipelines using RDF as the configuration and orchestration layer.
+RDF-Connect is a modular framework for building and executing multilingual data processing pipelines using RDF as the configuration and orchestration layer.
 
 It enables fine-grained, reusable processor components that exchange streaming data, allowing workflows to be described declaratively across programming languages and environments.
-RDF Connect is especially well suited for data transformation, integration, and linked data publication.
+RDF-Connect is especially well suited for data transformation, integration, and linked data publication.
 
 # Usage Paths
 
@@ -45,7 +45,7 @@ This section is complete in terms of content, but may be reorganized or rewritte
 
 # Concepts
 
-This section introduces the core concepts of the RDF Connect framework.
+This section introduces the core concepts of the RDF-Connect framework.
 
 ## Pipeline
 
@@ -65,7 +65,7 @@ A runner is an execution strategy for processors — for example, a processor in
 
 The orchestrator is the core component responsible for executing a pipeline. 
 It reads the configuration, initializes runners, dispatches processor instantiations, and coordinates data flow between them. 
-It acts as the runtime conductor that interprets RDF Connect’s declarative configuration.
+It acts as the runtime conductor that interprets RDF-Connect’s declarative configuration.
 
 ## Reader / Writer
 
@@ -79,7 +79,7 @@ These provide an idiomatic way to transport streaming data  between processors.
 🚧 This section is a work in progress and will be expanded soon.
 </div>
 
-This section provides a high-level overview of how to define and run a pipeline in RDF Connect. The rest of the specification provides detail on how each part works.
+This section provides a high-level overview of how to define and run a pipeline in RDF-Connect. The rest of the specification provides detail on how each part works.
 
 Here's a simple example:
 
@@ -95,7 +95,7 @@ The orchestrator parses the configuration, resolves all runner and processor def
 
 # SHACL as Configuration Schema
 
-RDF Connect uses SHACL [[shacl]] not only as a data validation mechanism but also as a schema language for defining the configuration interface of components such as processors and runners.
+RDF-Connect uses SHACL [[shacl]] not only as a data validation mechanism but also as a schema language for defining the configuration interface of components such as processors and runners.
 These SHACL shapes enable:
 
 * Static validation of component descriptions.
@@ -106,7 +106,7 @@ Shapes define required and optional configuration properties, which are transfor
 
 <div class="example" title="From SHACL to JSON configuration">
     This SHACL shape definition defines a configuration structure for a processor.
-    In RDF Connect, such shapes are used to describe required parameters.
+    In RDF-Connect, such shapes are used to describe required parameters.
     They result in a well-typed JSON object that developers can rely on during implementation.
 
     Shacl shape defining some required configuration for a processor
@@ -198,13 +198,13 @@ This declares a configuration field named input whose value is an instance of `r
 
 * `sh:class` is used in a property constraint to indicate the expected class of the object (i.e., the RDF resource at that property).
 * `sh:targetClass` is used on a `sh:NodeShape` to associate it with a class, so that tools can look up the shape when encountering a value with that class.
-* In RDF Connect, `sh:targetClass` shapes define reusable schemas for configuration blocks that can be nested using sh:class.
+* In RDF-Connect, `sh:targetClass` shapes define reusable schemas for configuration blocks that can be nested using sh:class.
 
 This allows composable, type-safe configuration structures where nested components follow their own validation and extraction rules.
 
 ### Special Component Types: rdfc:Reader and rdfc:Writer
 
-`rdfc:Reader` and `rdfc:Writer` are special component types in RDF Connect. 
+`rdfc:Reader` and `rdfc:Writer` are special component types in RDF-Connect. 
 Unlike generic nested objects, these represent runtime injection points for data input and output, respectively.
 
 * Fields with `sh:class rdfc:Reader` or `rdfc:Writer` must be instantiated by the runner environment.
@@ -294,12 +294,12 @@ This results in the following JSON object:
 
 
 
-# RDF Connect by Layer
+# RDF-Connect by Layer
 
 
 ## Orchestrator
 
-The orchestrator is the central runtime entity in RDF Connect. 
+The orchestrator is the central runtime entity in RDF-Connect. 
 It reads the pipeline configuration, sets up the runners, initiates processors, and routes messages between them.
 It ensures the dataflow graph described by the pipeline is brought to life across isolated runtimes.
 The orchestrator acts as a coordinator, not an executor. Each runner is responsible for running the actual processor code, but the orchestrator ensures the pipeline as a whole behaves as intended.
@@ -315,7 +315,7 @@ Responsibilities:
 * Handle retries, streaming, and backpressure.
 
 <div class=note>
-The remained of this section is intended for developers building custom runners or integrating RDF Connect into infrastructure.
+The remained of this section is intended for developers building custom runners or integrating RDF-Connect into infrastructure.
 </div>
 
 ### Protobuf Messaging Protocol
@@ -342,7 +342,7 @@ path: ./message.mdd
 
 ### Streaming Messages
 
-For large messages or real-time input, RDF Connect supports a streaming model.
+For large messages or real-time input, RDF-Connect supports a streaming model.
 Instead of sending entire payloads as a single message, the message can be broken into chunks and sends them over time. 
 This is handled by the StreamChunk message type.
 
@@ -381,7 +381,7 @@ This is the main unit most users interact with when defining workflows.
 
 # Ontology Reference
 
-The RDF Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF Connect Ontology](https://w3id.org/rdf-connect/ontology.ttl) for details.
+The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF-Connect Ontology](https://w3id.org/rdf-connect/ontology.ttl) for details.
 
 
 # Putting It All Together: Example Flow and Use Case
