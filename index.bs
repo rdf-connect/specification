@@ -36,41 +36,67 @@ Depending on your use case, you may only need a subset of this specification:
 This section is complete in terms of content, but may be reorganized or rewritten for clarity during editorial review.
 </div>
 
-* **Language Agnosticism**: Integrate processor components written in different languages (e.g., JavaScript, Python, shell).
-* **Streaming by Default**: Pass data between processors, via an orchestrator, to support large-scale and real-time data.
-* **Semantic Configuration**: Use RDF to define processors, pipelines, inputs, and outputs.
-* **Reusability**: Allow processors to be reused across different pipelines and contexts.
-* **Transparency**: Facilitate introspection and documentation of pipeline structure through RDF vocabularies.
-* **Lineage**: Achieve native `prov-o` provenance information.
+RDF-Connect is designed to be **language-agnostic**, enabling seamless integration of processor components written in diverse programming languages such as JavaScript, Python, and shell scripts.
+This flexibility allows developers to leverage existing tools and libraries within their language of choice, avoiding the constraints of monolithic, single-language frameworks.
+
+A key architectural principle of RDF-Connect is that it operates in a **streaming-by-default** mode.
+Data flows between processors via a central orchestrator, supporting real-time and large-scale data processing scenarios.
+This streaming model ensures efficient memory usage and enables continuous transformation and publication of data as it is ingested.
+
+The configuration of pipelines, processors, inputs, and outputs is expressed semantically using RDF.
+This use of **semantic configuration** promotes clarity, extensibility, and interoperability by describing the structure and behavior of the system in a machine-readable, standards-based format.
+
+Processor components in RDF Connect are designed for **reusability**.
+A processor defined once can be reused across multiple pipelines and in varying contexts, reducing duplication and encouraging modular design practices.
+This modularity fosters rapid prototyping and easier maintenance of complex workflows.
+
+**Transparency** is a fundamental goal of the framework.
+By leveraging RDF vocabularies to describe pipeline components and their interactions, RDF-Connect makes it easy to inspect, document, and reason about the behavior and structure of a pipeline, both during development and after deployment.
+
+Finally, RDF-Connect provides native support for **provenance** tracking using the PROV-O ontology.
+Each step in the pipeline can be traced to its source, enabling detailed **lineage** tracking.
+This capability is especially critical in applications involving data quality, reproducibility, and compliance.
 
 # Concepts
 
-This section introduces the core concepts of the RDF-Connect framework.
+This section introduces the core concepts underpinning the RDF-Connect framework.
+These concepts collectively define the modular, streaming, and language-agnostic architecture that enables RDF-Connect to support sophisticated, provenance-aware data pipelines.
 
 ## Pipeline
 
-A pipeline defines an sequence of data transformation steps.
-Each step connects one or more processors with associated runners and configuration parameters.
+At the heart of RDF-Connect is the notion of a *pipeline*, which defines a structured sequence of processing steps.
+Each step corresponds to a *processor*, configured with parameters and paired with an appropriate runner that governs its execution.
+Pipelines specify the flow of data between processors using *readers* and *writers*, forming a streaming architecture in which data is continuously passed along and transformed.
+The pipeline configuration itself is expressed in RDF, making it semantically explicit and machine-interpretable.
 
 ## Processor
 
-A processor is a reusable software component that accepts input data, transforms it, and emits output data. 
-Processors can be written in any language and executed with a runner.
+A *processor* is a modular, reusable software component that performs a discrete data processing task.
+In a typical scenario, a *processor* receives input data through a *reader*, transforms it according to its logic, and emits the result via a *writer*.
+However, processors are also flexible enough to support single-directional tasks, such as those that only produce or only consume data.
+Crucially, processors are implementation-agnostic --- they can be written in any programming language and integrated into pipelines via language-specific runners.
+This makes processors the building blocks of RDF-Connect’s cross-language interoperability.
 
 ## Runner
 
-A runner is an execution strategy for processors — for example, a processor in Javascript is a class that is started using a `NodeRunner`.
+A *runner* is responsible for executing a *processor* on behalf of the *orchestrator*.
+Each *runner* targets a specific language or execution environment, enabling processors written in different languages to participate seamlessly in a *pipeline*.
+For example, a JavaScript processor would be executed using a `NodeRunner`, which knows how to initialize and manage JavaScript-based components.
+In this sense, a *runner* serves as an execution strategy, abstracting away the platform-specific details of launching and interacting with a *processor*.
 
 ## Orchestrator
 
-The orchestrator is the core component responsible for executing a pipeline. 
-It reads the configuration, initializes runners, dispatches processor instantiations, and coordinates data flow between them. 
-It acts as the runtime conductor that interprets RDF-Connect’s declarative configuration.
+The *orchestrator* is the central component that interprets and runs RDF-Connect pipelines.
+It parses the RDF-based configuration, initializes and assigns runners, instantiates processors, and manages the data flow between components.
+Acting as the conductor of the system, the *orchestrator* ensures that *processors* execute in the correct order and that data is passed efficiently and correctly through the *pipeline*.
+Its role is fundamental to realizing the streaming and semantic integration goals of RDF-Connect.
 
 ## Reader / Writer
 
-Readers and Writers are components that define how data is streamed into and out of a processor.
-These provide an idiomatic way to transport streaming data  between processors.
+*Readers* and *writers* provide the streaming interfaces that connect *processors* within a *pipeline*.
+A writer streams data out from a processor, while a reader receives data into a processor.
+Together, they define how data flows between pipeline steps in an idiomatic and composable way.
+This separation of concerns allows for flexible data routing and makes it easy to compose and recombine processors across different pipeline configurations.
 
 
 # Getting Started
@@ -81,7 +107,7 @@ These provide an idiomatic way to transport streaming data  between processors.
 
 This section provides a high-level overview of how to define and run a pipeline in RDF-Connect. The rest of the specification provides detail on how each part works.
 
-Here's a simple example:
+Here is a basic example:
 
 ```turtle
 ex:pipeline a rdfc:Pipeline ;
@@ -89,7 +115,7 @@ ex:pipeline a rdfc:Pipeline ;
     rdfc:processor ex:myProcessor .
 ```
 
-Once a pipeline is fully described using RDF, it is handed off to the orchestrator.
+Once a pipeline is fully described using RDF, it is handed over to the orchestrator.
 The orchestrator parses the configuration, resolves all runner and processor definitions, and initiates execution.
 
 
@@ -145,36 +171,44 @@ Results in the following JSON structure.
 
 ## Mapping SHACL to Configuration Structures
 
-Each `sh:property` statement in a SHACL shape defines a configuration field with the following interpretation:
+Each `sh:property` statement in a SHACL shape directly maps to a field in a configuration object, such as a JSON structure.
+This enables semantically rich, machine-validated configurations for processors and pipelines within RDF-Connect.
 
 ### Required Fields
 
 **sh:path**
-  - Indicates the RDF predicate that must be present on the target resource.
-  - Used to extract values from the data graph.
+
+This property indicates the RDF predicate that must be present on the target resource.
+In the context of configuration mapping, `sh:path` is used to extract the corresponding value from the data graph.
+It defines the link between the RDF representation and the configuration data being generated or interpreted.
 
 **sh:name**
-  - Defines the field name used in the resulting configuration object (e.g., a key in a JSON structure).
-  - This decouples the internal RDF predicate from the external configuration representation.
+
+The `sh:name` property provides the external field name used in the resulting configuration object.
+This allows decoupling the internal RDF predicate (as defined in sh:path) from how the value appears in the configuration file.
 
 **sh:datatype** or **sh:class**
-  - Specifies the expected type of the value.
-  - Use `sh:datatype` for primitive types (e.g., `xsd:string`, `xsd:anyURI`).
-  - Use `sh:class` for nested resources (i.e., objects that are further interpreted according to their own shapes).
+
+These properties define the expected type of the configuration field.
+Use `sh:datatype` for primitive types such as `xsd:string`, `xsd:boolean`, or `xsd:anyURI`.
+When the expected value is a nested resource, i.e., an object with its own structured fields, use `sh:class` instead.
+This signals that the value is an embedded configuration object to be interpreted according to its own SHACL shape, enabling deeply nested configuration structures.
 
 ### Optional Fields
 
 **sh:minCount**
-  - The minimum number of expected values.
-  - If this constraint is not met, a validation error is raised.
-  - A value of 1 implies the field is required.
+
+This property defines the minimum number of values that must be provided.
+If the actual number of values is below this threshold, a validation error will be raised.
+A `sh:minCount` of 1 or higher indicates that the field is required in the configuration.
 
 **sh:maxCount**
-  - The maximum number of allowed values.
-  - If more values are present, a validation error is raised.
-  - Special case:
-    - If `sh:maxCount = 1`, the resulting field is a single value (`T`).
-    - If `sh:maxCount > 1` or is unspecified, the resulting field is an array (`T[]`).
+
+This property sets the maximum number of values allowed for a field.
+It also determines how the field should be interpreted structurally.
+If `sh:maxCount` is set to 1, the corresponding field is treated as a single value (`T`).
+If it is greater than 1 or left unspecified, the field is interpreted as a list or array of values (`T[]`).
+This behavior ensures that the structure of the configuration aligns with user expectations and downstream processing logic.
 
 
 ## Nested Shapes and Component Types
@@ -192,25 +226,29 @@ sh:property [
 ]
 ```
 
-This declares a configuration field named input whose value is an instance of `rdfc:Reader`.
+This defines a configuration field named `input` whose value is expected to be an instance of the class `rdfc:Reader`.
 
-### Use of sh:class and `sh:targetClass`
+### Use of `sh:class` and `sh:targetClass`
 
-* `sh:class` is used in a property constraint to indicate the expected class of the object (i.e., the RDF resource at that property).
-* `sh:targetClass` is used on a `sh:NodeShape` to associate it with a class, so that tools can look up the shape when encountering a value with that class.
-* In RDF-Connect, `sh:targetClass` shapes define reusable schemas for configuration blocks that can be nested using sh:class.
+The `sh:class` predicate is used within a property constraint to indicate that the value of a field must be an RDF resource belonging to a specific class.
+This class must, in turn, have a shape associated with it that defines its expected structure.
 
-This allows composable, type-safe configuration structures where nested components follow their own validation and extraction rules.
+To make this connection, `sh:targetClass` is used on a `sh:NodeShape`. 
+This associates the shape with a class so that tools can look up the shape definition when they encounter an RDF resource of that class.
 
-### Special Component Types: rdfc:Reader and rdfc:Writer
+In RDF-Connect, `sh:targetClass` allows reusable schemas to be defined for configuration components.
+These can then be referenced in other shapes through `sh:class`, enabling configuration structures that are both modular and type-safe.
 
-`rdfc:Reader` and `rdfc:Writer` are special component types in RDF-Connect. 
-Unlike generic nested objects, these represent runtime injection points for data input and output, respectively.
+### Special Component Types: `rdfc:Reader` and `rdfc:Writer`
 
-* Fields with `sh:class rdfc:Reader` or `rdfc:Writer` must be instantiated by the runner environment.
-* The runner must resolve these values into programming language-native abstractions for sending or receiving data messages.
+`rdfc:Reader` and `rdfc:Writer` are two special classes to represent input and output endpoints in RDF-Connect pipelines.
+Fields that are declared with `sh:class rdfc:Reader` or `sh:class rdfc:Writer` are not simply nested configuration objects.
+They serve as runtime injection points for streaming data.
 
-These abstractions typically expose idiomatic APIs depending on the language (e.g., JavaScript streams, async iterators, function callbacks).
+At execution time, the runner is responsible for resolving these references into actual language-native abstractions.
+Depending on the programming environment, these may be JavaScript streams, async iterators, or callback-based interfaces.
+
+For example:
 
 ```turtle
 sh:property [
@@ -221,14 +259,13 @@ sh:property [
 ]
 ```
 
-This configuration ensures that the processor receives a data source named input, which will be resolved by the runner and injected into the processor's runtime context.
-
-This approach enables loose coupling between declarative pipeline configuration and concrete data-flow mechanisms.
+This declares an `input` field that must be provided and will be automatically connected to an input stream by the runner.
+This design decouples the declarative pipeline configuration from the underlying data transport logic, allowing developers to focus on processor behavior rather than infrastructure.
 
 
 ## Example: Putting it all together
 
-The following example SHACL shape could accompany a FooBar processor that appends text to each incoming message and echos it to the next channel.
+The following SHACL definitions and RDF instance demonstrate how a FooBar processor might be configured to append text to each incoming message and send the result to an output channel.
 
 ```turtle
 [ ] a sh:NodeShape;
@@ -353,30 +390,22 @@ path: ./streamMessage.mdd
 
 ## Runner
 
-A runner describes how to execute a processor. Most users will reuse existing runners, such as NodeRunner or BashRunner.
-
-You only need to write your own runner if you're integrating a new execution environment.
+<div class=issue>
+🚧 This section is a work in progress and will be expanded soon.
+</div>
 
 
 ## Processor
 
-A processor is the reusable data transformation component. Each processor must be associated with a runner.
-
-Even if you're not writing processors yourself, you may need to understand this section to configure one.
-
-## Used In Pipelines
-
-Once defined, a processor can be linked into a pipeline via the `rdfc:processor` property.
-
-```turtle
-rdfc:processor ex:myProcessor .
-```
+<div class=issue>
+🚧 This section is a work in progress and will be expanded soon.
+</div>
 
 ## Pipeline
 
-Pipelines connect processors using runners to form a processing graph.
-
-This is the main unit most users interact with when defining workflows.
+<div class=issue>
+🚧 This section is a work in progress and will be expanded soon.
+</div>
 
 
 # Ontology Reference
