@@ -333,6 +333,40 @@ This results in the following JSON object:
 
 # RDF-Connect by Layer
 
+Communication between the orchestrator and the runners happens using a strongly typed protocol defined in Protocol Buffers (protobuf).
+This enables language-independent and efficient communication across processes and machines.
+
+The protobuf server is the orchestrator, which is the central point.
+The orchestrator starts all runners and notifies the runners of the different processors they should start.
+The orchestrator is also the message post office, allowing messages to be sent to the correct runner which will relay those messages to the correct processor.
+
+
+## Communication Protocol: Orchestrator ↔ Runner
+
+RDF Connect uses a bidirectional communication protocol based on Protocol Buffers (protobuf) for interaction between the **Orchestrator** and **Runners**.
+The orchestrator manages execution, while runners host and execute individual processors.
+
+### Messages Sent to Runners
+
+The orchestrator can send the following messages to the runner:
+
+* Rpc.pipeline: Contains the complete pipeline configuration (in Turtle syntax).
+* Rpc.proc: Instructs the runner to register and setup a new processor.
+* Rpc.start: Signals that all added processors should begin execution.
+* Rpc.close: Instructs the runner to gracefully shut down and terminate all processors.
+* Rpc.msg: Delivers a message to a specific processor. Used for normal data transfer.
+* Rpc.streamMsg: Begins a streaming message transmission to a processor, typically for large or chunked payloads.
+
+### Messages Sent from Runners
+
+The runner can send the following messages to the orchestrator:
+
+* Rpc.identify:  Indicates that the runner is ready and provides their unique identifier (IRI).
+* Rpc.init: Confirms that a previously registered **processor** has successfully started.
+* Rpc.close: Notifies that the runner is shutting down because all processors have stopped.
+* Rpc.msg: Sends a message from a processor to another processor via the orchestrator.
+* Rpc.streamMsg: Sends a streaming message from a processor. Used when the payload is too large for a single message.
+
 
 ## Orchestrator
 
@@ -355,12 +389,79 @@ Responsibilities:
 The remained of this section is intended for developers building custom runners or integrating RDF-Connect into infrastructure.
 </div>
 
-### Protobuf Messaging Protocol
-
-Communication between the orchestrator and the runners happens using a strongly typed protocol defined in Protocol Buffers (protobuf).
-This enables language-independent and efficient communication across processes and machines.
 
 ### Startup Flow
+
+#### Understanding the pipeline file
+
+The orchestrator begins execution from a single pipeline RDF file. This file **MUST** first be expanded by resolving all `owl:imports` statements recursively.
+Once the full RDF graph is assembled, the orchestrator extracts the pipeline to execute by locating a `rdfc:Pipeline` instance whose **subject is the pipeline file itself**.
+The pipeline is composed of one or more **runner–processor pairs**, defined via the `rdfc:consistsOf` property.
+Each pair includes:
+
+- A reference to a runner, using the `rdfc:instantiates` property.
+- One or more processors, referenced with the `rdfc:processor` property.
+
+
+<div class="example" title="Pipeline definition">
+
+    This example pipeline contains three processors divided over two runners.
+    The orchestrator starts for this pipeline, two runners and provide them with the correct processor configurations.
+
+```turtle
+@prefix rdfc: <https://w3id.org/rdf-connect/ontology#>.
+
+<> a rdfc:Pipeline;
+  rdfc:consistsOf [
+    rdfc:instantiates rdfc:NodeRunner;
+    rdfc:processor <sender>, <echo>;
+  ], [
+    rdfc:instantiates rdfc:RustRunner;
+    rdfc:processor <log>;
+  ].
+```
+</div>
+
+
+#### Starting the runners
+
+Each simple runner should specify two things:
+- the language it supports, linked with `rdfc:handlesSubjectsOf`
+- how the runner should be started, linked with `rdfc:command`
+
+<aside class="note">
+    The property `rdfc:handlesSubjectsOf` plays a somewhat unconventional role. It allows RDF Connect to remain aligned with [PROV-O](https://www.w3.org/TR/prov-o/).
+    A runner may link to a predicate such as `rdfc:jsImplementationOf`, and each JavaScript processor may then declare itself using:
+    ```turtle
+    <FooBar> rdfc:jsImplementationOf rdfc:Processor.
+    ```
+    Since `rdfc:jsImplementationOf` is a subproperty of `rdfs:subClassOf`, this implies that `<FooBar>` is a subclass of `rdfc:Processor`, which itself is a subclass of prov:Activity.
+    Therefore, any instance of `<FooBar>` can be inferred to be a prov:Activity.
+```turtle
+rdfc:jsImplementationOf rdfs:subPropertyOf rdfs:subClassOf.
+rdfc:Processor rdfs:subClassOf prov:Activity.
+```
+    This inference enables seamless integration with provenance-aware tooling.
+</aside>
+<aside class="note">
+    Currently, only **command-line-based runners** are supported and defined, but the model is intentionally extensible.
+    In the future, runners might be deployed remotely and communicate over a network. Such runners would not require a `rdfc:command`, but instead might define a connection endpoint (e.g., a URL or service descriptor).
+</aside>
+
+For each runner, the orchestrator appends two arguments to the configured command: the URL of the orchestrator's running Protobuf server and the IRI identifying the runner instance.
+It then executes the resulting command to spawn the runner process.
+
+The orchestrator MUST track all active runners, specifically recording which ones have sent an RPC.identify message after startup. This message confirms that the runner is ready to accept processor assignments.
+
+Once all expected runners have successfully identified themselves, the orchestrator proceeds to the next step in the pipeline initialization sequence.
+
+#### Starting processors
+
+
+<div class=issue>
+🚧 This section is a work in progress and will be expanded soon.
+</div>
+
 
 The following diagram describes the startup sequence handled by the orchestrator. This includes validating pipeline structure, instantiating runners, and initializing processor instances.
 
