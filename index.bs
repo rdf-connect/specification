@@ -451,38 +451,140 @@ rdfc:Processor rdfs:subClassOf prov:Activity.
 For each runner, the orchestrator appends two arguments to the configured command: the URL of the orchestrator's running Protobuf server and the IRI identifying the runner instance.
 It then executes the resulting command to spawn the runner process.
 
-The orchestrator MUST track all active runners, specifically recording which ones have sent an RPC.identify message after startup. This message confirms that the runner is ready to accept processor assignments.
+Each runner is expected to connect back with the orchestrator with the `connect` method, setting up a bidirectional stream of messages, dubbed `normal stream`. 
+When a message is sent, without identifying how, the message is sent using this stream.
+
+The orchestrator MUST track all active runners, specifically recording which ones have sent an `RPC.identify` message after startup. This message confirms that the runner is ready to accept processor assignments.
 
 Once all expected runners have successfully identified themselves, the orchestrator proceeds to the next step in the pipeline initialization sequence.
 
 #### Starting processors
 
+Once all runners have been successfully identified via Rpc.identify, the orchestrator proceeds to initialize the processors defined in the pipeline. 
+This involves the extraction and transformation of processor configuration data into a format suitable for consumption by the associated runner.
 
-<div class=issue>
-🚧 This section is a work in progress and will be expanded soon.
+**Processor Arguments**
+
+Processor arguments are encoded as JSON-LD objects, providing a structured representation of RDF configuration data. 
+JSON-LD fits the requirements as it is selected for the following reasons, and it allows encoding of typed literals and nested structures, in alignment with SHACL definitions. 
+This while still enabling extensibility, supporting advanced use cases such as capturing full SHACL paths or preserving provenance metadata.
+
+Support for JSON-LD is optional for runners. 
+Runners MAY choose to treat the JSON-LD as plain JSON if they do not require the semantic context or graph-aware features. 
+However, all runners MUST accept the structure produced by the orchestrator.
+
+Processor arguments come from the SHACL shape defined for the processor type.
+Each field is mapped following section [Mapping SHACL to Configuration Structures](#mapping-shacl-to-configuration-structures).
+A JSON-LD `@context` is generated mapping all `sh:name` values to the corresponding IRIs from `sh:path`.
+ If the processor instance has a known RDF identifier or `rdf:type`, these are added to the JSON-LD using `@id` and `@type`.
+
+<div class="example" title="Example to extract JSON-LD from data and a SHACL shape">
+    Let's take this shape, note that the shape also includes a `rdfc:Reader`.
+```turtle
+@prefix : <http://example.org/>.
+[] a sh:NodeShape;
+    sh:targetClass <FooBar>;
+    sh:property [
+        sh:name "reader";
+        sh:property :reader;
+        sh:class rdfc:Reader;
+        sh:maxCount 1;
+    ], [
+        sh:name "count";
+        sh:property :count;
+        sh:datatype xsd:number;
+        sh:maxCount 1;
+    ].
+
+<SomeId> a <FooBar>;
+    :reader <ReaderId>;
+    :count 42.
+```
+    The following JSON-LD structure is built. Which aligns with section [Mapping SHACL to Configuration Structures](#mapping-shacl-to-configuration-structures).
+
+```json
+{
+    "@context": {
+        "reader": "http://example.org/reader",
+        "count": "http://example.org/count"
+    }
+    "@id": "SomeId",
+    "@type": "FooBar",
+    "reader": {
+        "@type": "https://w3id.org/rdf-connect/ontology#Reader",
+        "@id": "ReaderId"
+    },
+    "count": 42
+}
+```
 </div>
 
+**Processor Definition Extraction**
 
-The following diagram describes the startup sequence handled by the orchestrator. This includes validating pipeline structure, instantiating runners, and initializing processor instances.
+In addition to extracting processor instance arguments, the orchestrator MUST also extract the processor definition configuration. This definition provides implementation-specific parameters, typically required to launch the processor in a specific runtime (e.g., JavaScript entrypoints, file paths, class names, etc.).
+
+Processor definitions are extracted using the same SHACL-based mechanism described previously. The shape used for this extraction is associated with the programming language or runtime type and MUST be processed in the same way to produce a structured JSON-LD object.
+
+**RPC message**
+
+Once both the arguments and definition have been extracted for a processor instance, the orchestrator sends an `Rpc.proc` message to the appropriate runner, initiating the processor launch process.
+
+The orchestrator MUST keep an internal record of all processor instance that have been dispatched to a runner, and the runner’s acknowledgment that a processor was successfully launched, as indicated by an incoming `Rpc.init` message.
+
+No processor may be assumed to be operational until its runner has responded with `Rpc.init`.
+When all processors are successfully initialized, the orchestrator can start the pipeline.
+
+
+#### Starting the pipeline
+
+The orchestrator can start the pipeline by sending a `RPC.start` message to each runner.
+
+The full startup flow is shown in this diagram.
 
 <pre class=include>
 path: ./startup.mdd
 </pre>
 
-### Message Handling Flow
 
-Once processors are running, the orchestrator handles incoming messages and forwards them to the appropriate reader instances, based on their declared channels.
+### Handling messages
+
+The orchestrator acts as a message broker between processors. 
+It is responsible for receiving messages from runners and forwarding them to the appropriate destination runners based on channel identifiers defined in the pipeline.
+Importantly, channels support **many-to-many** communication: multiple processors may emit to or receive from the same channel.
+
+
+#### Normal messages
+
+When a runner sends a `Rpc.msg` message to the orchestrator, the message includes a channel IRI indicating its logical destination. 
+
+The orchestrator MUST:
+1. Resolve the set of processors that are declared to consume this channel.
+2. Determine which runner is responsible for each of those processors.
+3. Forward the message to each relevant runner using `Rpc.msg`.
+
+These messages are sent as discrete units and fit within the allowed message size.
 
 <pre class=include>
 path: ./message.mdd
 </pre>
 
 
-### Streaming Messages
+#### Streaming messages
 
-For large messages or real-time input, RDF-Connect supports a streaming model.
-Instead of sending entire payloads as a single message, the message can be broken into chunks and sends them over time. 
-This is handled by the StreamChunk message type.
+When the payload of a message is large, the streaming message protocol SHOULD be used.
+This protocol enables large messages to be sent incrementally over a separate gRPC stream while maintaining channel-based routing.
+
+The process is as follows:
+1. **Sender** (runner) initiates a `sendStreamMessage` gRPC stream to the orchestrator.
+2. The **orchestrator** generates a unique stream identifier and sends it back on this stream.
+3. The **sender** then sends a `Rpc.streamMsg` over the normal bidirectional RPC stream, including the stream identifier and the channel IRI.
+4. The **orchestrator** resolves which processors receive messages on the given channel and forwards the stream identifier to their corresponding runners with `Rpc.streamMsg`.
+5. **Receiving runners** connect to the orchestrator using `receiveStreamMessage`, passing the received stream identifier.
+6. Once all participants are connected, the orchestrator acts as a relay: all incoming chunks from the sending stream are forwarded to each connected receiving stream.
+
+The orchestrator MUST close all associated receiving streams once the sending stream completes.
+
+This mechanism ensures that high-volume or large data payloads can be distributed across the pipeline efficiently and reliably.
 
 <pre class=include>
 path: ./streamMessage.mdd

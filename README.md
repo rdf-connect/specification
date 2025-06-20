@@ -9,6 +9,7 @@ pip3 install bikeshed
 
 Compile
 ```bash
+source .venv/bin/activate
 bikeshed watch
 ```
 
