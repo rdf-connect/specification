@@ -1489,7 +1489,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version 275834c42, updated Wed Jun 11 14:18:15 2025 -0700" name="generator">
-  <meta content="2c28a027bb5c3f930895cd18657d2ebbe9456f06" name="revision">
+  <meta content="22f7ce5b0d38987d945b7663a1f477364b442bc1" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" rel="stylesheet">
 <style>/* Boilerplate: style-autolinks */
@@ -2016,7 +2016,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">RDF-Connect Specification</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Living Standard,
-    <time class="dt-updated" datetime="2025-06-16">16 June 2025</time></span></h2>
+    <time class="dt-updated" datetime="2025-06-20">20 June 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Issue Tracking:
@@ -2030,7 +2030,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 16 June 2025,
+In addition, as of 20 June 2025,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2094,9 +2094,14 @@ Parts of this work may be from another specification document.  If so, those par
           <li><a href="#understanding-the-pipeline-file"><span class="secno">7.2.1.1</span> <span class="content">Understanding the pipeline file</span></a>
           <li><a href="#starting-the-runners"><span class="secno">7.2.1.2</span> <span class="content">Starting the runners</span></a>
           <li><a href="#starting-processors"><span class="secno">7.2.1.3</span> <span class="content">Starting processors</span></a>
+          <li><a href="#starting-the-pipeline"><span class="secno">7.2.1.4</span> <span class="content">Starting the pipeline</span></a>
          </ol>
-        <li><a href="#message-handling-flow"><span class="secno">7.2.2</span> <span class="content">Message Handling Flow</span></a>
-        <li><a href="#streaming-messages"><span class="secno">7.2.3</span> <span class="content">Streaming Messages</span></a>
+        <li>
+         <a href="#handling-messages"><span class="secno">7.2.2</span> <span class="content">Handling messages</span></a>
+         <ol class="toc">
+          <li><a href="#normal-messages"><span class="secno">7.2.2.1</span> <span class="content">Normal messages</span></a>
+          <li><a href="#streaming-messages"><span class="secno">7.2.2.2</span> <span class="content">Streaming messages</span></a>
+         </ol>
        </ol>
       <li><a href="#runner①"><span class="secno">7.3</span> <span class="content">Runner</span></a>
       <li><a href="#processor①"><span class="secno">7.4</span> <span class="content">Processor</span></a>
@@ -2479,13 +2484,74 @@ Each pair includes:</p>
 </aside>
    <p>For each runner, the orchestrator appends two arguments to the configured command: the URL of the orchestrator’s running Protobuf server and the IRI identifying the runner instance.
 It then executes the resulting command to spawn the runner process.</p>
-   <p>The orchestrator MUST track all active runners, specifically recording which ones have sent an RPC.identify message after startup. This message confirms that the runner is ready to accept processor assignments.</p>
+   <p>Each runner is expected to connect back with the orchestrator with the <code>connect</code> method, setting up a bidirectional stream of messages, dubbed <code>normal stream</code>.
+When a message is sent, without identifying how, the message is sent using this stream.</p>
+   <p>The orchestrator MUST track all active runners, specifically recording which ones have sent an <code>RPC.identify</code> message after startup. This message confirms that the runner is ready to accept processor assignments.</p>
    <p>Once all expected runners have successfully identified themselves, the orchestrator proceeds to the next step in the pipeline initialization sequence.</p>
    <h5 class="heading settled" data-level="7.2.1.3" id="starting-processors"><span class="secno">7.2.1.3. </span><span class="content">Starting processors</span><a class="self-link" href="#starting-processors"></a></h5>
-   <div class="issue" id="issue-4e16af14①"><a class="self-link" href="#issue-4e16af14①"></a>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
-   <p>The following diagram describes the startup sequence handled by the orchestrator. This includes validating pipeline structure, instantiating runners, and initializing processor instances.</p>
+   <p>Once all runners have been successfully identified via Rpc.identify, the orchestrator proceeds to initialize the processors defined in the pipeline.
+This involves the extraction and transformation of processor configuration data into a format suitable for consumption by the associated runner.</p>
+   <p><strong>Processor Arguments</strong></p>
+   <p>Processor arguments are encoded as JSON-LD objects, providing a structured representation of RDF configuration data.
+JSON-LD fits the requirements as it is selected for the following reasons, and it allows encoding of typed literals and nested structures, in alignment with SHACL definitions. 
+This while still enabling extensibility, supporting advanced use cases such as capturing full SHACL paths or preserving provenance metadata.</p>
+   <p>Support for JSON-LD is optional for runners.
+Runners MAY choose to treat the JSON-LD as plain JSON if they do not require the semantic context or graph-aware features. 
+However, all runners MUST accept the structure produced by the orchestrator.</p>
+   <p>Processor arguments come from the SHACL shape defined for the processor type.
+Each field is mapped following section <a href="#mapping-shacl-to-configuration-structures">Mapping SHACL to Configuration Structures</a>.
+A JSON-LD <code>@context</code> is generated mapping all <code>sh:name</code> values to the corresponding IRIs from <code>sh:path</code>.
+ If the processor instance has a known RDF identifier or <code>rdf:type</code>, these are added to the JSON-LD using <code>@id</code> and <code>@type</code>.</p>
+   <div class="example" id="example-9bc81fee" title="Example to extract JSON-LD from data and a SHACL shape">
+    <a class="self-link" href="#example-9bc81fee"></a>
+    Let’s take this shape, note that the shape also includes a <code>rdfc:Reader</code>.
+
+<pre class="language-turtle highlight"><c- k>@prefix</c-> <c- nn>:</c-> <c- g>&lt;http://example.org/></c-><c- p>.</c->
+<c- p>[]</c-> <c- b>a</c-> <c- nn>sh</c-><c- p>:</c-><c- f>NodeShape</c-><c- p>;</c->
+    <c- nn>sh</c-><c- p>:</c-><c- f>targetClass</c-> <c- g>&lt;FooBar></c-><c- p>;</c->
+    <c- nn>sh</c-><c- p>:</c-><c- f>property</c-> <c- p>[</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>name</c-> <c- s>"reader"</c-><c- p>;</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>property</c-> <c- p>:</c-><c- f>reader</c-><c- p>;</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>class</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Reader</c-><c- p>;</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>maxCount</c-> <c- mi>1</c-><c- p>;</c->
+    <c- p>],</c-> <c- p>[</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>name</c-> <c- s>"count"</c-><c- p>;</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>property</c-> <c- p>:</c-><c- f>count</c-><c- p>;</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>datatype</c-> <c- nn>xsd</c-><c- p>:</c-><c- f>number</c-><c- p>;</c->
+        <c- nn>sh</c-><c- p>:</c-><c- f>maxCount</c-> <c- mi>1</c-><c- p>;</c->
+    <c- p>].</c->
+
+<c- g>&lt;SomeId></c-> <c- b>a</c-> <c- g>&lt;FooBar></c-><c- p>;</c->
+    <c- p>:</c-><c- f>reader</c-> <c- g>&lt;ReaderId></c-><c- p>;</c->
+    <c- p>:</c-><c- f>count</c-> <c- mi>42</c-><c- p>.</c->
+</pre>
+    <p>The following JSON-LD structure is built. Which aligns with section <a href="#mapping-shacl-to-configuration-structures">Mapping SHACL to Configuration Structures</a>.</p>
+<pre class="language-json highlight"><c- p>{</c->
+    <c- f>"@context"</c-><c- p>:</c-> <c- p>{</c->
+        <c- f>"reader"</c-><c- p>:</c-> <c- u>"http://example.org/reader"</c-><c- p>,</c->
+        <c- f>"count"</c-><c- p>:</c-> <c- u>"http://example.org/count"</c->
+    <c- p>}</c->
+    <c- f>"@id"</c-><c- p>:</c-> <c- u>"SomeId"</c-><c- p>,</c->
+    <c- f>"@type"</c-><c- p>:</c-> <c- u>"FooBar"</c-><c- p>,</c->
+    <c- f>"reader"</c-><c- p>:</c-> <c- p>{</c->
+        <c- f>"@type"</c-><c- p>:</c-> <c- u>"https://w3id.org/rdf-connect/ontology#Reader"</c-><c- p>,</c->
+        <c- f>"@id"</c-><c- p>:</c-> <c- u>"ReaderId"</c->
+    <c- p>},</c->
+    <c- f>"count"</c-><c- p>:</c-> <c- mi>42</c->
+<c- p>}</c->
+</pre>
+   </div>
+   <p><strong>Processor Definition Extraction</strong></p>
+   <p>In addition to extracting processor instance arguments, the orchestrator MUST also extract the processor definition configuration. This definition provides implementation-specific parameters, typically required to launch the processor in a specific runtime (e.g., JavaScript entrypoints, file paths, class names, etc.).</p>
+   <p>Processor definitions are extracted using the same SHACL-based mechanism described previously. The shape used for this extraction is associated with the programming language or runtime type and MUST be processed in the same way to produce a structured JSON-LD object.</p>
+   <p><strong>RPC message</strong></p>
+   <p>Once both the arguments and definition have been extracted for a processor instance, the orchestrator sends an <code>Rpc.proc</code> message to the appropriate runner, initiating the processor launch process.</p>
+   <p>The orchestrator MUST keep an internal record of all processor instance that have been dispatched to a runner, and the runner’s acknowledgment that a processor was successfully launched, as indicated by an incoming <code>Rpc.init</code> message.</p>
+   <p>No processor may be assumed to be operational until its runner has responded with <code>Rpc.init</code>.
+When all processors are successfully initialized, the orchestrator can start the pipeline.</p>
+   <h5 class="heading settled" data-level="7.2.1.4" id="starting-the-pipeline"><span class="secno">7.2.1.4. </span><span class="content">Starting the pipeline</span><a class="self-link" href="#starting-the-pipeline"></a></h5>
+   <p>The orchestrator can start the pipeline by sending a <code>RPC.start</code> message to each runner.</p>
+   <p>The full startup flow is shown in this diagram.</p>
    <div class="mermaid">
 sequenceDiagram
     autonumber
@@ -2512,8 +2578,22 @@ sequenceDiagram
         end
     end
 </div>
-   <h4 class="heading settled" data-level="7.2.2" id="message-handling-flow"><span class="secno">7.2.2. </span><span class="content">Message Handling Flow</span><a class="self-link" href="#message-handling-flow"></a></h4>
-   <p>Once processors are running, the orchestrator handles incoming messages and forwards them to the appropriate reader instances, based on their declared channels.</p>
+   <h4 class="heading settled" data-level="7.2.2" id="handling-messages"><span class="secno">7.2.2. </span><span class="content">Handling messages</span><a class="self-link" href="#handling-messages"></a></h4>
+   <p>The orchestrator acts as a message broker between processors.
+It is responsible for receiving messages from runners and forwarding them to the appropriate destination runners based on channel identifiers defined in the pipeline.
+Importantly, channels support <strong>many-to-many</strong> communication: multiple processors may emit to or receive from the same channel.</p>
+   <h5 class="heading settled" data-level="7.2.2.1" id="normal-messages"><span class="secno">7.2.2.1. </span><span class="content">Normal messages</span><a class="self-link" href="#normal-messages"></a></h5>
+   <p>When a runner sends a <code>Rpc.msg</code> message to the orchestrator, the message includes a channel IRI indicating its logical destination.</p>
+   <p>The orchestrator MUST:</p>
+   <ol>
+    <li data-md>
+     <p>Resolve the set of processors that are declared to consume this channel.</p>
+    <li data-md>
+     <p>Determine which runner is responsible for each of those processors.</p>
+    <li data-md>
+     <p>Forward the message to each relevant runner using <code>Rpc.msg</code>.</p>
+   </ol>
+   <p>These messages are sent as discrete units and fit within the allowed message size.</p>
    <div class="mermaid">
 sequenceDiagram
     participant P1 as Processor 1
@@ -2527,10 +2607,26 @@ sequenceDiagram
     O -->> R2: Msg to Channel A
     R2-->>P2: Msg to Channel A
 </div>
-   <h4 class="heading settled" data-level="7.2.3" id="streaming-messages"><span class="secno">7.2.3. </span><span class="content">Streaming Messages</span><a class="self-link" href="#streaming-messages"></a></h4>
-   <p>For large messages or real-time input, RDF-Connect supports a streaming model.
-Instead of sending entire payloads as a single message, the message can be broken into chunks and sends them over time. 
-This is handled by the StreamChunk message type.</p>
+   <h5 class="heading settled" data-level="7.2.2.2" id="streaming-messages"><span class="secno">7.2.2.2. </span><span class="content">Streaming messages</span><a class="self-link" href="#streaming-messages"></a></h5>
+   <p>When the payload of a message is large, the streaming message protocol SHOULD be used.
+This protocol enables large messages to be sent incrementally over a separate gRPC stream while maintaining channel-based routing.</p>
+   <p>The process is as follows:</p>
+   <ol>
+    <li data-md>
+     <p><strong>Sender</strong> (runner) initiates a <code>sendStreamMessage</code> gRPC stream to the orchestrator.</p>
+    <li data-md>
+     <p>The <strong>orchestrator</strong> generates a unique stream identifier and sends it back on this stream.</p>
+    <li data-md>
+     <p>The <strong>sender</strong> then sends a <code>Rpc.streamMsg</code> over the normal bidirectional RPC stream, including the stream identifier and the channel IRI.</p>
+    <li data-md>
+     <p>The <strong>orchestrator</strong> resolves which processors receive messages on the given channel and forwards the stream identifier to their corresponding runners with <code>Rpc.streamMsg</code>.</p>
+    <li data-md>
+     <p><strong>Receiving runners</strong> connect to the orchestrator using <code>receiveStreamMessage</code>, passing the received stream identifier.</p>
+    <li data-md>
+     <p>Once all participants are connected, the orchestrator acts as a relay: all incoming chunks from the sending stream are forwarded to each connected receiving stream.</p>
+   </ol>
+   <p>The orchestrator MUST close all associated receiving streams once the sending stream completes.</p>
+   <p>This mechanism ensures that high-volume or large data payloads can be distributed across the pipeline efficiently and reliably.</p>
    <div class="mermaid">
 sequenceDiagram
     autonumber
@@ -2556,21 +2652,21 @@ sequenceDiagram
     end
 </div>
    <h3 class="heading settled" data-level="7.3" id="runner①"><span class="secno">7.3. </span><span class="content">Runner</span><a class="self-link" href="#runner①"></a></h3>
-   <div class="issue" id="issue-4e16af14②"><a class="self-link" href="#issue-4e16af14②"></a>
+   <div class="issue" id="issue-4e16af14①"><a class="self-link" href="#issue-4e16af14①"></a>
 🚧 This section is a work in progress and will be expanded soon.
 </div>
    <h3 class="heading settled" data-level="7.4" id="processor①"><span class="secno">7.4. </span><span class="content">Processor</span><a class="self-link" href="#processor①"></a></h3>
-   <div class="issue" id="issue-4e16af14③"><a class="self-link" href="#issue-4e16af14③"></a>
+   <div class="issue" id="issue-4e16af14②"><a class="self-link" href="#issue-4e16af14②"></a>
 🚧 This section is a work in progress and will be expanded soon.
 </div>
    <h3 class="heading settled" data-level="7.5" id="pipeline①"><span class="secno">7.5. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline①"></a></h3>
-   <div class="issue" id="issue-4e16af14④"><a class="self-link" href="#issue-4e16af14④"></a>
+   <div class="issue" id="issue-4e16af14③"><a class="self-link" href="#issue-4e16af14③"></a>
 🚧 This section is a work in progress and will be expanded soon.
 </div>
    <h2 class="heading settled" data-level="8" id="ontology-reference"><span class="secno">8. </span><span class="content">Ontology Reference</span><a class="self-link" href="#ontology-reference"></a></h2>
    <p>The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full <a href="https://w3id.org/rdf-connect/ontology.ttl">RDF-Connect Ontology</a> for details.</p>
    <h2 class="heading settled" data-level="9" id="putting-it-all-together-example-flow-and-use-case"><span class="secno">9. </span><span class="content">Putting It All Together: Example Flow and Use Case</span><a class="self-link" href="#putting-it-all-together-example-flow-and-use-case"></a></h2>
-   <div class="issue" id="issue-4e16af14⑤"><a class="self-link" href="#issue-4e16af14⑤"></a>
+   <div class="issue" id="issue-4e16af14④"><a class="self-link" href="#issue-4e16af14④"></a>
 🚧 This section is a work in progress and will be expanded soon.
 </div>
 <script type="module">
@@ -2768,7 +2864,4 @@ sequenceDiagram
    <div class="issue">
 🚧 This section is a work in progress and will be expanded soon.
  <a class="issue-return" href="#issue-4e16af14④" title="Jump to section">↵</a></div>
-   <div class="issue">
-🚧 This section is a work in progress and will be expanded soon.
- <a class="issue-return" href="#issue-4e16af14⑤" title="Jump to section">↵</a></div>
   </div>
