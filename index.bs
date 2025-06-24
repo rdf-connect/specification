@@ -454,7 +454,11 @@ It then executes the resulting command to spawn the runner process.
 Each runner is expected to connect back with the orchestrator with the `connect` method, setting up a bidirectional stream of messages, dubbed `normal stream`. 
 When a message is sent, without identifying how, the message is sent using this stream.
 
-The orchestrator MUST track all active runners, specifically recording which ones have sent an `RPC.identify` message after startup. This message confirms that the runner is ready to accept processor assignments.
+The orchestrator MUST track all active runners, specifically recording which ones have sent an `RPC.identify` message after startup.
+This message confirms that the runner is ready to accept processor assignments.
+The orchestrator responds to the runner with a `RPC.pipeline` message, containing the full expanded pipeline as Turtle.
+This pipeline configuration is useful when a runner wants to extract processor arguments themselves, instead of using the provided JSON-LD.
+
 
 Once all expected runners have successfully identified themselves, the orchestrator proceeds to the next step in the pipeline initialization sequence.
 
@@ -593,10 +597,158 @@ path: ./streamMessage.mdd
 
 ## Runner
 
-<div class=issue>
-🚧 This section is a work in progress and will be expanded soon.
+A runner in RDF-Connect is responsible for managing and executing processors within a specific execution context—typically a programming language runtime.
+Each runner MUST connect with the orchestrator's Protobuf server and follow the RDF-Connect protocol.
+
+While minimal runners can be implemented with little overhead, they often become enriched with quality-of-life features to better support developers and processors operating in that language.
+
+These quality-of-life features include:
+
+* Wrapping readers and writer in idiomatic objects
+* Runners SHOULD also make it possible to let processors start up before acknowledging to the orchestrator that the processor is initialized. 
+
+This is useful for processor to execute longer running operations, like reading a file or consulting an external API.
+
+Runners MAY also coalesce or transform message types to simplify processor implementation.
+A streaming message may be aggregated into a single message if the underlying platform supports arbitrarily large strings or buffers,
+and a single message may be exposed to the processor as a streaming interface, emitting a single chunk.
+This flexibility allows generic processors to be implemented more easily without needing to distinguish between streaming and single-message protocols.
+
+<div class=example>
+    Coalescing messages enables simpler processor logic. 
+    For example, a processor that performs string replacement on incoming messages may otherwise need to implement both streaming and non-streaming handling.
+
+    Instead, the runner can convert incoming messages to a streaming form with one chunk, or aggregate streaming chunks into a single message.
+
+    It is advised that those processors, before forwarding the message, look at the length of each message before determining whether or not this message should be a single message or a streaming message.
 </div>
 
+The following sections detail the runner startup flow and describe the expected interactions between runners and the orchestrator during initialization and execution.
+
+
+### Pipeline Configuration
+
+A runner is defined with an instance of `rdfc:Runner`, which currently is instantiated by a command.
+It requires the command to actually start the runner with `rdfc:command`, and a link to the programming context (`rdfc:handlesSubjectsOf`).
+The object of `rdfc:handlesSubjectsOf`, links runners and processors to a context term. This often refers to the programming language.
+
+Each context term is related to a SHACL shape, this specifies the incoming data that the runner can use to start the processors.
+
+<div class=example>
+For example, the NodeRunner, a runner that starts JavaScript processors with node, is defined as follows.
+
+```turtle
+rdfc:NodeRunner a rdfc:Runner;
+rdfc:handlesSubjectsOf rdfc:jsImplementationOf;
+rdfc:command "npx js-runner".
+
+# Note that rdfc:jsImplementationOf is already defined by RDF-Connect as follows
+sds:implementationOf rdfs:subPropertyOf rdfs:subClassOf.
+rdfc:jsImplementationOf rdfs:subPropertyOf sds:implementationOf.
+
+# Shape that a Js Processor should fulfil;
+[ ] a sh:NodeShape;
+  # We target it with jsImplementationOf
+  sh:targetSubjectsOf rdfc:jsImplementationOf;
+  sh:property [
+    sh:path rdfc:file;
+    sh:name "file";
+    sh:minCount 1;
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ], [
+    sh:path rdfc:class;
+    sh:name "clazz";
+    sh:maxCount 1;
+    sh:datatype xsd:string;
+  ].
+```
+
+This way, `rdfc:jsImplementationOf` is a predicate declared only for JavaScript processors.
+And a shape is linked with that predicate, runners can expect a file location and a class name to start the JavaScript processors.
+</div>
+
+
+### Connecting Flow
+
+Each runner is started by the orchestrator using a command defined in the pipeline via `rdfc:command`.
+The orchestrator appends two arguments to this command: the URL of the orchestrator’s Protobuf server and the IRI that uniquely identifies the runner.
+
+Upon startup, the runner MUST connect to the orchestrator using the provided URL via the `RPC.connect` method. 
+This establishes a bidirectional message stream referred to as the normal stream.
+
+Once connected, the runner MUST send an `RPC.identify` message, identifying itself with the provided IRI.
+The orchestrator then sends an `RPC.pipeline` message containing the complete, expanded pipeline definition.
+The runner MAY ignore this message.
+
+Runners MAY initiate a separate log stream using the `RPC.logStream` method to stream log messages back to the orchestrator.
+
+<div class=issue>
+🚧 More information about the log stream is coming soon.
+</div>
+
+### Starting Processors
+
+After initialization, the orchestrator may send multiple `RPC.proc` messages to instruct the runner to start specific processors. 
+Each message includes a processor IRI, a configuration object and an argument object.
+Both the configuration and arguments are provided as JSON-LD strings.
+The configuration object contains the arguments as defined by the context term following the section [Mapping SHACL to Configuration Structures](#mapping-shacl-to-configuration-structures).
+The arguments are constructed based on a SHACL shape defined for the processor type
+
+Runners are MAY to parse these JSON-LD payloads and transform known constructs into idiomatic equivalents. 
+For example reader and writer objects are represented as JSON-LD values with: an @id field (containing the channel IRI), and an @type field indicating either `https://w3id.org/rdf-connect/ontology#Reader` or `https://w3id.org/rdf-connect/ontology#Writer`.
+Runners are RECOMMENDED to replace these values with appropriate typed objects in the target environment.
+
+When a processor has been fully initialized, the runner MUST send an `RPC.init` message, indicating success or failure.
+If any runner signals an error during initialization, the orchestrator MUST abort the pipeline execution.
+
+Once all processors are successfully initialized, the orchestrator sends an `RPC.start` message, instructing the runner to start the processors.
+
+After all processors complete their execution, the runner SHOULD gracefully close the normal stream to signal completion.
+
+
+### Handling messages
+
+Apart from starting processors, the runner also acts as a mediator that makes sure the correct messages are sent to the correct processors.
+The orchestrator MAY send any number of `RPC.msg` or `RPC.streamMsg` messages.
+
+#### Receiving normal messages
+
+When an `RPC.msg` is received, the runner MUST deliver the message to the appropriate processor, using the channel IRI to determine the correct target.
+Message routing can follow either a push or pull model depending on the language environment.
+
+Runners MAY coerce or transform messages into a different representation, including converting a normal message into a streaming message with a single chunk or converting a short streaming message into a normal message.
+These transformations SHOULD respect the preferences of the processor and the runner's internal design constraints.
+
+#### Receiving streaming messages
+
+When an `RPC.streamMsg` is received, the runner MUST establish a streaming channel by invoking the `RPC.receiveStreamMessage` method with the provided stream ID.
+This initiates a stream of chunks from the orchestrator.
+
+The runner MUST forward these chunks to the appropriate processor, using any internal buffering or transformation logic as required.
+
+If the runner determines that the message size is small enough, it MAY convert a streaming message into a single message object, provided that this does not violate processor expectations or exceed system limits.
+
+#### Sending messages
+
+Runners must also support outbound communication from processors. 
+While runners MAY omit support for certain advanced features (such as streaming output), a full implementation is strongly encouraged.
+
+To send a normal message, the runner uses the `RPC.msg` method on the normal stream.
+
+To send a streaming message, the runner first initiates the `RPC.sendStreamMessage` method, which returns a new stream.
+The orchestrator responds with a single message, the stream ID.
+
+The runner then sends an `RPC.streamMsg` on the normal stream, including the channel IRI and stream ID.
+Finally, the runner streams the message content using the created stream.
+The message is considered complete when the runner closes the stream.
+
+#### Channel Closure
+
+Processors may indicate that a given channel is closed (i.e., no further messages will be sent). 
+The runner MUST propagate this information to the orchestrator via an RPC.close message.
+
+Similarly, when the orchestrator sends an RPC.close message for a channel, the runner MAY respond by closing or invalidating the corresponding data stream in the processor.
 
 ## Processor
 

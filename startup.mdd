@@ -10,6 +10,7 @@ sequenceDiagram
         Note over R: Runner is started with cli
         O-->>R: Startup with address and uri
         R-->>O: RPC.Identify: with uri
+        O-->>R: RPC.Pipeline: with expanded pipeline
     end
     loop For every processor
         O-->>R: RPC.Processor: Start processor
