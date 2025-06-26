@@ -18,6 +18,10 @@ RDF-Connect is a modular framework for building and executing multilingual data 
 It enables fine-grained, reusable processor components that exchange streaming data, allowing workflows to be described declaratively across programming languages and environments.
 RDF-Connect is especially well suited for data transformation, integration, and linked data publication.
 
+
+<pre id="overview" class="mermaid">
+</pre>
+
 # Usage Paths
 
 <div class=note>
@@ -26,7 +30,7 @@ This section is complete in terms of content, but may be reorganized or rewritte
 
 Depending on your use case, you may only need a subset of this specification:
 
-* **Pipeline Authors**: Start with [[#getting-started]] and focus on [[#pipeline]].
+* **Pipeline Authors**: Read the [site](https://rdf-connect.github.io/) or [[#pipeline]] for a more in depth explanation.
 * **Processor Developers**: Read [[#processor]] and [[#runner]].
 * **Platform Maintainers**: Read all sections, including implementation notes.
 
@@ -98,25 +102,6 @@ A writer streams data out from a processor, while a reader receives data into a 
 Together, they define how data flows between pipeline steps in an idiomatic and composable way.
 This separation of concerns allows for flexible data routing and makes it easy to compose and recombine processors across different pipeline configurations.
 
-
-# Getting Started
-
-<div class=issue>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
-
-This section provides a high-level overview of how to define and run a pipeline in RDF-Connect. The rest of the specification provides detail on how each part works.
-
-Here is a basic example:
-
-```turtle
-ex:pipeline a rdfc:Pipeline ;
-    rdfc:instantiates ex:myRunner ;
-    rdfc:processor ex:myProcessor .
-```
-
-Once a pipeline is fully described using RDF, it is handed over to the orchestrator.
-The orchestrator parses the configuration, resolves all runner and processor definitions, and initiates execution.
 
 
 # SHACL as Configuration Schema
@@ -545,8 +530,7 @@ The orchestrator can start the pipeline by sending a `RPC.start` message to each
 
 The full startup flow is shown in this diagram.
 
-<pre class=include>
-path: ./startup.mdd
+<pre class="mermaid" id="startup">
 </pre>
 
 
@@ -568,8 +552,8 @@ The orchestrator MUST:
 
 These messages are sent as discrete units and fit within the allowed message size.
 
-<pre class=include>
-path: ./message.mdd
+
+<pre class="mermaid" id="message">
 </pre>
 
 
@@ -590,8 +574,7 @@ The orchestrator MUST close all associated receiving streams once the sending st
 
 This mechanism ensures that high-volume or large data payloads can be distributed across the pipeline efficiently and reliably.
 
-<pre class=include>
-path: ./streamMessage.mdd
+<pre class="mermaid" id="streamMessage">
 </pre>
 
 
@@ -614,7 +597,7 @@ A streaming message may be aggregated into a single message if the underlying pl
 and a single message may be exposed to the processor as a streaming interface, emitting a single chunk.
 This flexibility allows generic processors to be implemented more easily without needing to distinguish between streaming and single-message protocols.
 
-<div class=example>
+<div class=note>
     Coalescing messages enables simpler processor logic. 
     For example, a processor that performs string replacement on incoming messages may otherwise need to implement both streaming and non-streaming handling.
 
@@ -756,6 +739,7 @@ Similarly, when the orchestrator sends an RPC.close message for a channel, the r
 🚧 This section is a work in progress and will be expanded soon.
 </div>
 
+
 ## Pipeline
 
 <div class=issue>
@@ -768,16 +752,7 @@ Similarly, when the orchestrator sends an RPC.close message for a channel, the r
 The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF-Connect Ontology](https://w3id.org/rdf-connect/ontology.ttl) for details.
 
 
-# Putting It All Together: Example Flow and Use Case
-
-<div class=issue>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
+<script src="./scripts.js" type="module"></script>
 
 
 
-
-<script type=module>
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true });
-</script>
