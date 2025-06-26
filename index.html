@@ -1489,7 +1489,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version 275834c42, updated Wed Jun 11 14:18:15 2025 -0700" name="generator">
-  <meta content="d848525ffa35e27fdb495506e348046e7004d2df" name="revision">
+  <meta content="c13bb1f8fced77e1ab3544b6c9143998cd083861" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" rel="stylesheet">
 <style>/* Boilerplate: style-autolinks */
@@ -2016,7 +2016,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">RDF-Connect Specification</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Living Standard,
-    <time class="dt-updated" datetime="2025-06-24">24 June 2025</time></span></h2>
+    <time class="dt-updated" datetime="2025-06-26">26 June 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Issue Tracking:
@@ -2030,7 +2030,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 24 June 2025,
+In addition, as of 26 June 2025,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2058,71 +2058,69 @@ Parts of this work may be from another specification document.  If so, those par
       <li><a href="#orchestrator"><span class="secno">4.4</span> <span class="content">Orchestrator</span></a>
       <li><a href="#reader-writer"><span class="secno">4.5</span> <span class="content">Reader / Writer</span></a>
      </ol>
-    <li><a href="#getting-started"><span class="secno">5</span> <span class="content">Getting Started</span></a>
     <li>
-     <a href="#shacl-as-configuration-schema"><span class="secno">6</span> <span class="content">SHACL as Configuration Schema</span></a>
+     <a href="#shacl-as-configuration-schema"><span class="secno">5</span> <span class="content">SHACL as Configuration Schema</span></a>
      <ol class="toc">
       <li>
-       <a href="#mapping-shacl-to-configuration-structures"><span class="secno">6.1</span> <span class="content">Mapping SHACL to Configuration Structures</span></a>
+       <a href="#mapping-shacl-to-configuration-structures"><span class="secno">5.1</span> <span class="content">Mapping SHACL to Configuration Structures</span></a>
        <ol class="toc">
-        <li><a href="#required-fields"><span class="secno">6.1.1</span> <span class="content">Required Fields</span></a>
-        <li><a href="#optional-fields"><span class="secno">6.1.2</span> <span class="content">Optional Fields</span></a>
+        <li><a href="#required-fields"><span class="secno">5.1.1</span> <span class="content">Required Fields</span></a>
+        <li><a href="#optional-fields"><span class="secno">5.1.2</span> <span class="content">Optional Fields</span></a>
        </ol>
       <li>
-       <a href="#nested-shapes-and-component-types"><span class="secno">6.2</span> <span class="content">Nested Shapes and Component Types</span></a>
+       <a href="#nested-shapes-and-component-types"><span class="secno">5.2</span> <span class="content">Nested Shapes and Component Types</span></a>
        <ol class="toc">
-        <li><a href="#use-of-shclass-and-shtargetclass"><span class="secno">6.2.1</span> <span class="content">Use of <code>sh:class</code> and <code>sh:targetClass</code></span></a>
-        <li><a href="#special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">6.2.2</span> <span class="content">Special Component Types: <code>rdfc:Reader</code> and <code>rdfc:Writer</code></span></a>
+        <li><a href="#use-of-shclass-and-shtargetclass"><span class="secno">5.2.1</span> <span class="content">Use of <code>sh:class</code> and <code>sh:targetClass</code></span></a>
+        <li><a href="#special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">5.2.2</span> <span class="content">Special Component Types: <code>rdfc:Reader</code> and <code>rdfc:Writer</code></span></a>
        </ol>
-      <li><a href="#example-putting-it-all-together"><span class="secno">6.3</span> <span class="content">Example: Putting it all together</span></a>
+      <li><a href="#example-putting-it-all-together"><span class="secno">5.3</span> <span class="content">Example: Putting it all together</span></a>
      </ol>
     <li>
-     <a href="#rdf-connect-by-layer"><span class="secno">7</span> <span class="content">RDF-Connect by Layer</span></a>
+     <a href="#rdf-connect-by-layer"><span class="secno">6</span> <span class="content">RDF-Connect by Layer</span></a>
      <ol class="toc">
       <li>
-       <a href="#communication-protocol-orchestrator--runner"><span class="secno">7.1</span> <span class="content">Communication Protocol: Orchestrator ↔ Runner</span></a>
+       <a href="#communication-protocol-orchestrator--runner"><span class="secno">6.1</span> <span class="content">Communication Protocol: Orchestrator ↔ Runner</span></a>
        <ol class="toc">
-        <li><a href="#messages-sent-to-runners"><span class="secno">7.1.1</span> <span class="content">Messages Sent to Runners</span></a>
-        <li><a href="#messages-sent-from-runners"><span class="secno">7.1.2</span> <span class="content">Messages Sent from Runners</span></a>
+        <li><a href="#messages-sent-to-runners"><span class="secno">6.1.1</span> <span class="content">Messages Sent to Runners</span></a>
+        <li><a href="#messages-sent-from-runners"><span class="secno">6.1.2</span> <span class="content">Messages Sent from Runners</span></a>
        </ol>
       <li>
-       <a href="#orchestrator①"><span class="secno">7.2</span> <span class="content">Orchestrator</span></a>
+       <a href="#orchestrator①"><span class="secno">6.2</span> <span class="content">Orchestrator</span></a>
        <ol class="toc">
         <li>
-         <a href="#startup-flow"><span class="secno">7.2.1</span> <span class="content">Startup Flow</span></a>
+         <a href="#startup-flow"><span class="secno">6.2.1</span> <span class="content">Startup Flow</span></a>
          <ol class="toc">
-          <li><a href="#understanding-the-pipeline-file"><span class="secno">7.2.1.1</span> <span class="content">Understanding the pipeline file</span></a>
-          <li><a href="#starting-the-runners"><span class="secno">7.2.1.2</span> <span class="content">Starting the runners</span></a>
-          <li><a href="#starting-processors"><span class="secno">7.2.1.3</span> <span class="content">Starting processors</span></a>
-          <li><a href="#starting-the-pipeline"><span class="secno">7.2.1.4</span> <span class="content">Starting the pipeline</span></a>
+          <li><a href="#understanding-the-pipeline-file"><span class="secno">6.2.1.1</span> <span class="content">Understanding the pipeline file</span></a>
+          <li><a href="#starting-the-runners"><span class="secno">6.2.1.2</span> <span class="content">Starting the runners</span></a>
+          <li><a href="#starting-processors"><span class="secno">6.2.1.3</span> <span class="content">Starting processors</span></a>
+          <li><a href="#starting-the-pipeline"><span class="secno">6.2.1.4</span> <span class="content">Starting the pipeline</span></a>
          </ol>
         <li>
-         <a href="#handling-messages"><span class="secno">7.2.2</span> <span class="content">Handling messages</span></a>
+         <a href="#handling-messages"><span class="secno">6.2.2</span> <span class="content">Handling messages</span></a>
          <ol class="toc">
-          <li><a href="#normal-messages"><span class="secno">7.2.2.1</span> <span class="content">Normal messages</span></a>
-          <li><a href="#streaming-messages"><span class="secno">7.2.2.2</span> <span class="content">Streaming messages</span></a>
+          <li><a href="#normal-messages"><span class="secno">6.2.2.1</span> <span class="content">Normal messages</span></a>
+          <li><a href="#streaming-messages"><span class="secno">6.2.2.2</span> <span class="content">Streaming messages</span></a>
          </ol>
        </ol>
       <li>
-       <a href="#runner①"><span class="secno">7.3</span> <span class="content">Runner</span></a>
+       <a href="#runner①"><span class="secno">6.3</span> <span class="content">Runner</span></a>
        <ol class="toc">
-        <li><a href="#pipeline-configuration"><span class="secno">7.3.1</span> <span class="content">Pipeline Configuration</span></a>
-        <li><a href="#connecting-flow"><span class="secno">7.3.2</span> <span class="content">Connecting Flow</span></a>
-        <li><a href="#starting-processors①"><span class="secno">7.3.3</span> <span class="content">Starting Processors</span></a>
+        <li><a href="#pipeline-configuration"><span class="secno">6.3.1</span> <span class="content">Pipeline Configuration</span></a>
+        <li><a href="#connecting-flow"><span class="secno">6.3.2</span> <span class="content">Connecting Flow</span></a>
+        <li><a href="#starting-processors①"><span class="secno">6.3.3</span> <span class="content">Starting Processors</span></a>
         <li>
-         <a href="#handling-messages①"><span class="secno">7.3.4</span> <span class="content">Handling messages</span></a>
+         <a href="#handling-messages①"><span class="secno">6.3.4</span> <span class="content">Handling messages</span></a>
          <ol class="toc">
-          <li><a href="#receiving-normal-messages"><span class="secno">7.3.4.1</span> <span class="content">Receiving normal messages</span></a>
-          <li><a href="#receiving-streaming-messages"><span class="secno">7.3.4.2</span> <span class="content">Receiving streaming messages</span></a>
-          <li><a href="#sending-messages"><span class="secno">7.3.4.3</span> <span class="content">Sending messages</span></a>
-          <li><a href="#channel-closure"><span class="secno">7.3.4.4</span> <span class="content">Channel Closure</span></a>
+          <li><a href="#receiving-normal-messages"><span class="secno">6.3.4.1</span> <span class="content">Receiving normal messages</span></a>
+          <li><a href="#receiving-streaming-messages"><span class="secno">6.3.4.2</span> <span class="content">Receiving streaming messages</span></a>
+          <li><a href="#sending-messages"><span class="secno">6.3.4.3</span> <span class="content">Sending messages</span></a>
+          <li><a href="#channel-closure"><span class="secno">6.3.4.4</span> <span class="content">Channel Closure</span></a>
          </ol>
        </ol>
-      <li><a href="#processor①"><span class="secno">7.4</span> <span class="content">Processor</span></a>
-      <li><a href="#pipeline①"><span class="secno">7.5</span> <span class="content">Pipeline</span></a>
+      <li><a href="#processor①"><span class="secno">6.4</span> <span class="content">Processor</span></a>
+      <li><a href="#pipeline①"><span class="secno">6.5</span> <span class="content">Pipeline</span></a>
      </ol>
-    <li><a href="#ontology-reference"><span class="secno">8</span> <span class="content">Ontology Reference</span></a>
-    <li><a href="#putting-it-all-together-example-flow-and-use-case"><span class="secno">9</span> <span class="content">Putting It All Together: Example Flow and Use Case</span></a>
+    <li><a href="#ontology-reference"><span class="secno">7</span> <span class="content">Ontology Reference</span></a>
     <li><a href="#conformance"><span class="secno"></span> <span class="content">
     Conformance</span></a>
     <li>
@@ -2139,6 +2137,7 @@ Parts of this work may be from another specification document.  If so, those par
    <p>RDF-Connect is a modular framework for building and executing multilingual data processing pipelines using RDF as the configuration and orchestration layer.</p>
    <p>It enables fine-grained, reusable processor components that exchange streaming data, allowing workflows to be described declaratively across programming languages and environments.
 RDF-Connect is especially well suited for data transformation, integration, and linked data publication.</p>
+<pre class="mermaid" id="overview"></pre>
    <h2 class="heading settled" data-level="2" id="usage-paths"><span class="secno">2. </span><span class="content">Usage Paths</span><a class="self-link" href="#usage-paths"></a></h2>
    <div class="note" role="note">
 This section is complete in terms of content, but may be reorganized or rewritten for clarity during editorial review.
@@ -2146,7 +2145,7 @@ This section is complete in terms of content, but may be reorganized or rewritte
    <p>Depending on your use case, you may only need a subset of this specification:</p>
    <ul>
     <li data-md>
-     <p><strong>Pipeline Authors</strong>: Start with <a href="#getting-started">§ 5 Getting Started</a> and focus on <a href="#pipeline">§ 4.1 Pipeline</a>.</p>
+     <p><strong>Pipeline Authors</strong>: Read the <a href="https://rdf-connect.github.io/">site</a> or <a href="#pipeline">§ 4.1 Pipeline</a> for a more in depth explanation.</p>
     <li data-md>
      <p><strong>Processor Developers</strong>: Read <a href="#processor">§ 4.2 Processor</a> and <a href="#runner">§ 4.3 Runner</a>.</p>
     <li data-md>
@@ -2200,19 +2199,7 @@ Its role is fundamental to realizing the streaming and semantic integration goal
 A writer streams data out from a processor, while a reader receives data into a processor.
 Together, they define how data flows between pipeline steps in an idiomatic and composable way.
 This separation of concerns allows for flexible data routing and makes it easy to compose and recombine processors across different pipeline configurations.</p>
-   <h2 class="heading settled" data-level="5" id="getting-started"><span class="secno">5. </span><span class="content">Getting Started</span><a class="self-link" href="#getting-started"></a></h2>
-   <div class="issue" id="issue-4e16af14"><a class="self-link" href="#issue-4e16af14"></a>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
-   <p>This section provides a high-level overview of how to define and run a pipeline in RDF-Connect. The rest of the specification provides detail on how each part works.</p>
-   <p>Here is a basic example:</p>
-<pre class="language-turtle highlight"><c- nn>ex</c-><c- p>:</c-><c- f>pipeline</c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Pipeline</c-> <c- p>;</c->
-    <c- nn>rdfc</c-><c- p>:</c-><c- f>instantiates</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myRunner</c-> <c- p>;</c->
-    <c- nn>rdfc</c-><c- p>:</c-><c- f>processor</c-> <c- nn>ex</c-><c- p>:</c-><c- f>myProcessor</c-> <c- p>.</c->
-</pre>
-   <p>Once a pipeline is fully described using RDF, it is handed over to the orchestrator.
-The orchestrator parses the configuration, resolves all runner and processor definitions, and initiates execution.</p>
-   <h2 class="heading settled" data-level="6" id="shacl-as-configuration-schema"><span class="secno">6. </span><span class="content">SHACL as Configuration Schema</span><a class="self-link" href="#shacl-as-configuration-schema"></a></h2>
+   <h2 class="heading settled" data-level="5" id="shacl-as-configuration-schema"><span class="secno">5. </span><span class="content">SHACL as Configuration Schema</span><a class="self-link" href="#shacl-as-configuration-schema"></a></h2>
    <p>RDF-Connect uses SHACL <a data-link-type="biblio" href="#biblio-shacl" title="Shapes Constraint Language (SHACL)">[shacl]</a> not only as a data validation mechanism but also as a schema language for defining the configuration interface of components such as processors and runners.
 These SHACL shapes enable:</p>
    <ul>
@@ -2257,10 +2244,10 @@ These SHACL shapes enable:</p>
 <c- p>}</c->
 </pre>
    </div>
-   <h3 class="heading settled" data-level="6.1" id="mapping-shacl-to-configuration-structures"><span class="secno">6.1. </span><span class="content">Mapping SHACL to Configuration Structures</span><a class="self-link" href="#mapping-shacl-to-configuration-structures"></a></h3>
+   <h3 class="heading settled" data-level="5.1" id="mapping-shacl-to-configuration-structures"><span class="secno">5.1. </span><span class="content">Mapping SHACL to Configuration Structures</span><a class="self-link" href="#mapping-shacl-to-configuration-structures"></a></h3>
    <p>Each <code>sh:property</code> statement in a SHACL shape directly maps to a field in a configuration object, such as a JSON structure.
 This enables semantically rich, machine-validated configurations for processors and pipelines within RDF-Connect.</p>
-   <h4 class="heading settled" data-level="6.1.1" id="required-fields"><span class="secno">6.1.1. </span><span class="content">Required Fields</span><a class="self-link" href="#required-fields"></a></h4>
+   <h4 class="heading settled" data-level="5.1.1" id="required-fields"><span class="secno">5.1.1. </span><span class="content">Required Fields</span><a class="self-link" href="#required-fields"></a></h4>
    <p><strong>sh:path</strong></p>
    <p>This property indicates the RDF predicate that must be present on the target resource.
 In the context of configuration mapping, <code>sh:path</code> is used to extract the corresponding value from the data graph.
@@ -2273,7 +2260,7 @@ This allows decoupling the internal RDF predicate (as defined in sh:path) from h
 Use <code>sh:datatype</code> for primitive types such as <code>xsd:string</code>, <code>xsd:boolean</code>, or <code>xsd:anyURI</code>.
 When the expected value is a nested resource, i.e., an object with its own structured fields, use <code>sh:class</code> instead.
 This signals that the value is an embedded configuration object to be interpreted according to its own SHACL shape, enabling deeply nested configuration structures.</p>
-   <h4 class="heading settled" data-level="6.1.2" id="optional-fields"><span class="secno">6.1.2. </span><span class="content">Optional Fields</span><a class="self-link" href="#optional-fields"></a></h4>
+   <h4 class="heading settled" data-level="5.1.2" id="optional-fields"><span class="secno">5.1.2. </span><span class="content">Optional Fields</span><a class="self-link" href="#optional-fields"></a></h4>
    <p><strong>sh:minCount</strong></p>
    <p>This property defines the minimum number of values that must be provided.
 If the actual number of values is below this threshold, a validation error will be raised.
@@ -2284,7 +2271,7 @@ It also determines how the field should be interpreted structurally.
 If <code>sh:maxCount</code> is set to 1, the corresponding field is treated as a single value (<code>T</code>).
 If it is greater than 1 or left unspecified, the field is interpreted as a list or array of values (<code>T[]</code>).
 This behavior ensures that the structure of the configuration aligns with user expectations and downstream processing logic.</p>
-   <h3 class="heading settled" data-level="6.2" id="nested-shapes-and-component-types"><span class="secno">6.2. </span><span class="content">Nested Shapes and Component Types</span><a class="self-link" href="#nested-shapes-and-component-types"></a></h3>
+   <h3 class="heading settled" data-level="5.2" id="nested-shapes-and-component-types"><span class="secno">5.2. </span><span class="content">Nested Shapes and Component Types</span><a class="self-link" href="#nested-shapes-and-component-types"></a></h3>
    <p>Configuration fields can reference structured values instead of primitive literals.
 This is supported via <code>sh:class</code>, which indicates that the value must conform to another shape associated with a given RDF class.</p>
    <p>For example:</p>
@@ -2295,14 +2282,14 @@ This is supported via <code>sh:class</code>, which indicates that the value must
 <c- p>]</c->
 </pre>
    <p>This defines a configuration field named <code>input</code> whose value is expected to be an instance of the class <code>rdfc:Reader</code>.</p>
-   <h4 class="heading settled" data-level="6.2.1" id="use-of-shclass-and-shtargetclass"><span class="secno">6.2.1. </span><span class="content">Use of <code>sh:class</code> and <code>sh:targetClass</code></span><a class="self-link" href="#use-of-shclass-and-shtargetclass"></a></h4>
+   <h4 class="heading settled" data-level="5.2.1" id="use-of-shclass-and-shtargetclass"><span class="secno">5.2.1. </span><span class="content">Use of <code>sh:class</code> and <code>sh:targetClass</code></span><a class="self-link" href="#use-of-shclass-and-shtargetclass"></a></h4>
    <p>The <code>sh:class</code> predicate is used within a property constraint to indicate that the value of a field must be an RDF resource belonging to a specific class.
 This class must, in turn, have a shape associated with it that defines its expected structure.</p>
    <p>To make this connection, <code>sh:targetClass</code> is used on a <code>sh:NodeShape</code>.
 This associates the shape with a class so that tools can look up the shape definition when they encounter an RDF resource of that class.</p>
    <p>In RDF-Connect, <code>sh:targetClass</code> allows reusable schemas to be defined for configuration components.
 These can then be referenced in other shapes through <code>sh:class</code>, enabling configuration structures that are both modular and type-safe.</p>
-   <h4 class="heading settled" data-level="6.2.2" id="special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">6.2.2. </span><span class="content">Special Component Types: <code>rdfc:Reader</code> and <code>rdfc:Writer</code></span><a class="self-link" href="#special-component-types-rdfcreader-and-rdfcwriter"></a></h4>
+   <h4 class="heading settled" data-level="5.2.2" id="special-component-types-rdfcreader-and-rdfcwriter"><span class="secno">5.2.2. </span><span class="content">Special Component Types: <code>rdfc:Reader</code> and <code>rdfc:Writer</code></span><a class="self-link" href="#special-component-types-rdfcreader-and-rdfcwriter"></a></h4>
    <p><code>rdfc:Reader</code> and <code>rdfc:Writer</code> are two special classes to represent input and output endpoints in RDF-Connect pipelines.
 Fields that are declared with <code>sh:class rdfc:Reader</code> or <code>sh:class rdfc:Writer</code> are not simply nested configuration objects.
 They serve as runtime injection points for streaming data.</p>
@@ -2318,7 +2305,7 @@ Depending on the programming environment, these may be JavaScript streams, async
 </pre>
    <p>This declares an <code>input</code> field that must be provided and will be automatically connected to an input stream by the runner.
 This design decouples the declarative pipeline configuration from the underlying data transport logic, allowing developers to focus on processor behavior rather than infrastructure.</p>
-   <h3 class="heading settled" data-level="6.3" id="example-putting-it-all-together"><span class="secno">6.3. </span><span class="content">Example: Putting it all together</span><a class="self-link" href="#example-putting-it-all-together"></a></h3>
+   <h3 class="heading settled" data-level="5.3" id="example-putting-it-all-together"><span class="secno">5.3. </span><span class="content">Example: Putting it all together</span><a class="self-link" href="#example-putting-it-all-together"></a></h3>
    <p>The following SHACL definitions and RDF instance demonstrate how a FooBar processor might be configured to append text to each incoming message and send the result to an output channel.</p>
 <pre class="language-turtle highlight"><c- p>[</c-> <c- p>]</c-> <c- b>a</c-> <c- nn>sh</c-><c- p>:</c-><c- f>NodeShape</c-><c- p>;</c->
   <c- nn>sh</c-><c- p>:</c-><c- f>targetClass</c-> <c- p>:</c-><c- f>Channels</c-><c- p>;</c->
@@ -2376,16 +2363,16 @@ This design decouples the declarative pipeline configuration from the underlying
   append<c- o>:</c-> <c- u>" World!"</c->
 <c- p>}</c->
 </pre>
-   <h2 class="heading settled" data-level="7" id="rdf-connect-by-layer"><span class="secno">7. </span><span class="content">RDF-Connect by Layer</span><a class="self-link" href="#rdf-connect-by-layer"></a></h2>
+   <h2 class="heading settled" data-level="6" id="rdf-connect-by-layer"><span class="secno">6. </span><span class="content">RDF-Connect by Layer</span><a class="self-link" href="#rdf-connect-by-layer"></a></h2>
    <p>Communication between the orchestrator and the runners happens using a strongly typed protocol defined in Protocol Buffers (protobuf).
 This enables language-independent and efficient communication across processes and machines.</p>
    <p>The protobuf server is the orchestrator, which is the central point.
 The orchestrator starts all runners and notifies the runners of the different processors they should start.
 The orchestrator is also the message post office, allowing messages to be sent to the correct runner which will relay those messages to the correct processor.</p>
-   <h3 class="heading settled" data-level="7.1" id="communication-protocol-orchestrator--runner"><span class="secno">7.1. </span><span class="content">Communication Protocol: Orchestrator ↔ Runner</span><a class="self-link" href="#communication-protocol-orchestrator--runner"></a></h3>
+   <h3 class="heading settled" data-level="6.1" id="communication-protocol-orchestrator--runner"><span class="secno">6.1. </span><span class="content">Communication Protocol: Orchestrator ↔ Runner</span><a class="self-link" href="#communication-protocol-orchestrator--runner"></a></h3>
    <p>RDF Connect uses a bidirectional communication protocol based on Protocol Buffers (protobuf) for interaction between the <strong>Orchestrator</strong> and <strong>Runners</strong>.
 The orchestrator manages execution, while runners host and execute individual processors.</p>
-   <h4 class="heading settled" data-level="7.1.1" id="messages-sent-to-runners"><span class="secno">7.1.1. </span><span class="content">Messages Sent to Runners</span><a class="self-link" href="#messages-sent-to-runners"></a></h4>
+   <h4 class="heading settled" data-level="6.1.1" id="messages-sent-to-runners"><span class="secno">6.1.1. </span><span class="content">Messages Sent to Runners</span><a class="self-link" href="#messages-sent-to-runners"></a></h4>
    <p>The orchestrator can send the following messages to the runner:</p>
    <ul>
     <li data-md>
@@ -2401,7 +2388,7 @@ The orchestrator manages execution, while runners host and execute individual pr
     <li data-md>
      <p>Rpc.streamMsg: Begins a streaming message transmission to a processor, typically for large or chunked payloads.</p>
    </ul>
-   <h4 class="heading settled" data-level="7.1.2" id="messages-sent-from-runners"><span class="secno">7.1.2. </span><span class="content">Messages Sent from Runners</span><a class="self-link" href="#messages-sent-from-runners"></a></h4>
+   <h4 class="heading settled" data-level="6.1.2" id="messages-sent-from-runners"><span class="secno">6.1.2. </span><span class="content">Messages Sent from Runners</span><a class="self-link" href="#messages-sent-from-runners"></a></h4>
    <p>The runner can send the following messages to the orchestrator:</p>
    <ul>
     <li data-md>
@@ -2415,7 +2402,7 @@ The orchestrator manages execution, while runners host and execute individual pr
     <li data-md>
      <p>Rpc.streamMsg: Sends a streaming message from a processor. Used when the payload is too large for a single message.</p>
    </ul>
-   <h3 class="heading settled" data-level="7.2" id="orchestrator①"><span class="secno">7.2. </span><span class="content">Orchestrator</span><a class="self-link" href="#orchestrator①"></a></h3>
+   <h3 class="heading settled" data-level="6.2" id="orchestrator①"><span class="secno">6.2. </span><span class="content">Orchestrator</span><a class="self-link" href="#orchestrator①"></a></h3>
    <p>The orchestrator is the central runtime entity in RDF-Connect.
 It reads the pipeline configuration, sets up the runners, initiates processors, and routes messages between them.
 It ensures the dataflow graph described by the pipeline is brought to life across isolated runtimes.
@@ -2440,8 +2427,8 @@ The orchestrator acts as a coordinator, not an executor. Each runner is responsi
    <div class="note" role="note">
 The remained of this section is intended for developers building custom runners or integrating RDF-Connect into infrastructure.
 </div>
-   <h4 class="heading settled" data-level="7.2.1" id="startup-flow"><span class="secno">7.2.1. </span><span class="content">Startup Flow</span><a class="self-link" href="#startup-flow"></a></h4>
-   <h5 class="heading settled" data-level="7.2.1.1" id="understanding-the-pipeline-file"><span class="secno">7.2.1.1. </span><span class="content">Understanding the pipeline file</span><a class="self-link" href="#understanding-the-pipeline-file"></a></h5>
+   <h4 class="heading settled" data-level="6.2.1" id="startup-flow"><span class="secno">6.2.1. </span><span class="content">Startup Flow</span><a class="self-link" href="#startup-flow"></a></h4>
+   <h5 class="heading settled" data-level="6.2.1.1" id="understanding-the-pipeline-file"><span class="secno">6.2.1.1. </span><span class="content">Understanding the pipeline file</span><a class="self-link" href="#understanding-the-pipeline-file"></a></h5>
    <p>The orchestrator begins execution from a single pipeline RDF file. This file <strong>MUST</strong> first be expanded by resolving all <code>owl:imports</code> statements recursively.
 Once the full RDF graph is assembled, the orchestrator extracts the pipeline to execute by locating a <code>rdfc:Pipeline</code> instance whose <strong>subject is the pipeline file itself</strong>.
 The pipeline is composed of one or more <strong>runner–processor pairs</strong>, defined via the <code>rdfc:consistsOf</code> property.
@@ -2470,7 +2457,7 @@ Each pair includes:</p>
   <c- p>].</c->
 </pre>
    </div>
-   <h5 class="heading settled" data-level="7.2.1.2" id="starting-the-runners"><span class="secno">7.2.1.2. </span><span class="content">Starting the runners</span><a class="self-link" href="#starting-the-runners"></a></h5>
+   <h5 class="heading settled" data-level="6.2.1.2" id="starting-the-runners"><span class="secno">6.2.1.2. </span><span class="content">Starting the runners</span><a class="self-link" href="#starting-the-runners"></a></h5>
    <p>Each simple runner should specify two things:</p>
    <ul>
     <li data-md>
@@ -2505,7 +2492,7 @@ This message confirms that the runner is ready to accept processor assignments.
 The orchestrator responds to the runner with a <code>RPC.pipeline</code> message, containing the full expanded pipeline as Turtle.
 This pipeline configuration is useful when a runner wants to extract processor arguments themselves, instead of using the provided JSON-LD.</p>
    <p>Once all expected runners have successfully identified themselves, the orchestrator proceeds to the next step in the pipeline initialization sequence.</p>
-   <h5 class="heading settled" data-level="7.2.1.3" id="starting-processors"><span class="secno">7.2.1.3. </span><span class="content">Starting processors</span><a class="self-link" href="#starting-processors"></a></h5>
+   <h5 class="heading settled" data-level="6.2.1.3" id="starting-processors"><span class="secno">6.2.1.3. </span><span class="content">Starting processors</span><a class="self-link" href="#starting-processors"></a></h5>
    <p>Once all runners have been successfully identified via Rpc.identify, the orchestrator proceeds to initialize the processors defined in the pipeline.
 This involves the extraction and transformation of processor configuration data into a format suitable for consumption by the associated runner.</p>
    <p><strong>Processor Arguments</strong></p>
@@ -2566,41 +2553,15 @@ A JSON-LD <code>@context</code> is generated mapping all <code>sh:name</code> va
    <p>The orchestrator MUST keep an internal record of all processor instance that have been dispatched to a runner, and the runner’s acknowledgment that a processor was successfully launched, as indicated by an incoming <code>Rpc.init</code> message.</p>
    <p>No processor may be assumed to be operational until its runner has responded with <code>Rpc.init</code>.
 When all processors are successfully initialized, the orchestrator can start the pipeline.</p>
-   <h5 class="heading settled" data-level="7.2.1.4" id="starting-the-pipeline"><span class="secno">7.2.1.4. </span><span class="content">Starting the pipeline</span><a class="self-link" href="#starting-the-pipeline"></a></h5>
+   <h5 class="heading settled" data-level="6.2.1.4" id="starting-the-pipeline"><span class="secno">6.2.1.4. </span><span class="content">Starting the pipeline</span><a class="self-link" href="#starting-the-pipeline"></a></h5>
    <p>The orchestrator can start the pipeline by sending a <code>RPC.start</code> message to each runner.</p>
    <p>The full startup flow is shown in this diagram.</p>
-   <div class="mermaid">
-sequenceDiagram
-    autonumber
-    participant O as Orchestrator
-    participant R as Runner
-    participant P as Processor
-    Note over O: Discovered Runners<br>and processors
-    loop For every runner
-        Note over R: Runner is started with cli
-        O-->>R: Startup with address and uri
-        R-->>O: RPC.Identify: with uri
-        O-->>R: RPC.Pipeline: with expanded pipeline
-    end
-    loop For every processor
-        O-->>R: RPC.Processor: Start processor
-        Note over P: Load module and class
-        R-->>P: Load processor
-        R-->>P: Start processor with args
-        R-->>O: RPC.ProcessorInit: processor started
-    end
-    loop For every runner
-        O-->>R: RPC.Start: Start
-        loop For every Processor
-            R-->>P: Start
-        end
-    end
-</div>
-   <h4 class="heading settled" data-level="7.2.2" id="handling-messages"><span class="secno">7.2.2. </span><span class="content">Handling messages</span><a class="self-link" href="#handling-messages"></a></h4>
+<pre class="mermaid" id="startup"></pre>
+   <h4 class="heading settled" data-level="6.2.2" id="handling-messages"><span class="secno">6.2.2. </span><span class="content">Handling messages</span><a class="self-link" href="#handling-messages"></a></h4>
    <p>The orchestrator acts as a message broker between processors.
 It is responsible for receiving messages from runners and forwarding them to the appropriate destination runners based on channel identifiers defined in the pipeline.
 Importantly, channels support <strong>many-to-many</strong> communication: multiple processors may emit to or receive from the same channel.</p>
-   <h5 class="heading settled" data-level="7.2.2.1" id="normal-messages"><span class="secno">7.2.2.1. </span><span class="content">Normal messages</span><a class="self-link" href="#normal-messages"></a></h5>
+   <h5 class="heading settled" data-level="6.2.2.1" id="normal-messages"><span class="secno">6.2.2.1. </span><span class="content">Normal messages</span><a class="self-link" href="#normal-messages"></a></h5>
    <p>When a runner sends a <code>Rpc.msg</code> message to the orchestrator, the message includes a channel IRI indicating its logical destination.</p>
    <p>The orchestrator MUST:</p>
    <ol>
@@ -2612,20 +2573,8 @@ Importantly, channels support <strong>many-to-many</strong> communication: multi
      <p>Forward the message to each relevant runner using <code>Rpc.msg</code>.</p>
    </ol>
    <p>These messages are sent as discrete units and fit within the allowed message size.</p>
-   <div class="mermaid">
-sequenceDiagram
-    participant P1 as Processor 1
-    participant R1 as Runner 1
-    participant O as Orchestrator
-    participant R2 as Runner 2
-    participant P2 as Processor 2
-    P1-->>R1: Msg to Channel A
-    R1-->>O: Msg to Channel A
-    Note over O: Channel A is connected<br>to processor of Runner 2
-    O -->> R2: Msg to Channel A
-    R2-->>P2: Msg to Channel A
-</div>
-   <h5 class="heading settled" data-level="7.2.2.2" id="streaming-messages"><span class="secno">7.2.2.2. </span><span class="content">Streaming messages</span><a class="self-link" href="#streaming-messages"></a></h5>
+<pre class="mermaid" id="message"></pre>
+   <h5 class="heading settled" data-level="6.2.2.2" id="streaming-messages"><span class="secno">6.2.2.2. </span><span class="content">Streaming messages</span><a class="self-link" href="#streaming-messages"></a></h5>
    <p>When the payload of a message is large, the streaming message protocol SHOULD be used.
 This protocol enables large messages to be sent incrementally over a separate gRPC stream while maintaining channel-based routing.</p>
    <p>The process is as follows:</p>
@@ -2645,31 +2594,8 @@ This protocol enables large messages to be sent incrementally over a separate gR
    </ol>
    <p>The orchestrator MUST close all associated receiving streams once the sending stream completes.</p>
    <p>This mechanism ensures that high-volume or large data payloads can be distributed across the pipeline efficiently and reliably.</p>
-   <div class="mermaid">
-sequenceDiagram
-    autonumber
-    participant P1 as Processor 1
-    participant R1 as Runner 1
-    participant O as Orchestrator
-    participant R2 as Runner 2
-    participant P2 as Processor 2
-    P1 -->> R1: Send streaming<br>message
-    critical Start stream message
-        R1 ->> O: rpc.sendStreamMessage<br>(bidirectional stream)
-        O -->> R1: sends generated ID<br>of stream message
-        R1 -->> O: announce StreamMessage<br>with ID over normal stream
-        O -->> R2: announce StreamMessage<br>with ID over normal stream
-        R2 ->> O: rpc.receiveMessage with Id<br>starts receiving stream
-        R2 -->> P2: incoming stream message
-    end
-    loop Streams data
-        P1 -->> R1: Data chunks
-        R1 -->> O: Data chunks over stream
-        O -->> R2: Data chunks over stream
-        R2 -->>P2: Data chnuks
-    end
-</div>
-   <h3 class="heading settled" data-level="7.3" id="runner①"><span class="secno">7.3. </span><span class="content">Runner</span><a class="self-link" href="#runner①"></a></h3>
+<pre class="mermaid" id="streamMessage"></pre>
+   <h3 class="heading settled" data-level="6.3" id="runner①"><span class="secno">6.3. </span><span class="content">Runner</span><a class="self-link" href="#runner①"></a></h3>
    <p>A runner in RDF-Connect is responsible for managing and executing processors within a specific execution context—typically a programming language runtime.
 Each runner MUST connect with the orchestrator’s Protobuf server and follow the RDF-Connect protocol.</p>
    <p>While minimal runners can be implemented with little overhead, they often become enriched with quality-of-life features to better support developers and processors operating in that language.</p>
@@ -2685,8 +2611,8 @@ Each runner MUST connect with the orchestrator’s Protobuf server and follow th
 A streaming message may be aggregated into a single message if the underlying platform supports arbitrarily large strings or buffers,
 and a single message may be exposed to the processor as a streaming interface, emitting a single chunk.
 This flexibility allows generic processors to be implemented more easily without needing to distinguish between streaming and single-message protocols.</p>
-   <div class="example" id="example-ed756334">
-    <a class="self-link" href="#example-ed756334"></a>
+   <div class="note" role="note">
+    
     Coalescing messages enables simpler processor logic. 
     For example, a processor that performs string replacement on incoming messages may otherwise need to implement both streaming and non-streaming handling.
 
@@ -2695,7 +2621,7 @@ This flexibility allows generic processors to be implemented more easily without
     <p>It is advised that those processors, before forwarding the message, look at the length of each message before determining whether or not this message should be a single message or a streaming message.</p>
    </div>
    <p>The following sections detail the runner startup flow and describe the expected interactions between runners and the orchestrator during initialization and execution.</p>
-   <h4 class="heading settled" data-level="7.3.1" id="pipeline-configuration"><span class="secno">7.3.1. </span><span class="content">Pipeline Configuration</span><a class="self-link" href="#pipeline-configuration"></a></h4>
+   <h4 class="heading settled" data-level="6.3.1" id="pipeline-configuration"><span class="secno">6.3.1. </span><span class="content">Pipeline Configuration</span><a class="self-link" href="#pipeline-configuration"></a></h4>
    <p>A runner is defined with an instance of <code>rdfc:Runner</code>, which currently is instantiated by a command.
 It requires the command to actually start the runner with <code>rdfc:command</code>, and a link to the programming context (<code>rdfc:handlesSubjectsOf</code>).
 The object of <code>rdfc:handlesSubjectsOf</code>, links runners and processors to a context term. This often refers to the programming language.</p>
@@ -2733,7 +2659,7 @@ For example, the NodeRunner, a runner that starts JavaScript processors with nod
     <p>This way, <code>rdfc:jsImplementationOf</code> is a predicate declared only for JavaScript processors.
 And a shape is linked with that predicate, runners can expect a file location and a class name to start the JavaScript processors.</p>
    </div>
-   <h4 class="heading settled" data-level="7.3.2" id="connecting-flow"><span class="secno">7.3.2. </span><span class="content">Connecting Flow</span><a class="self-link" href="#connecting-flow"></a></h4>
+   <h4 class="heading settled" data-level="6.3.2" id="connecting-flow"><span class="secno">6.3.2. </span><span class="content">Connecting Flow</span><a class="self-link" href="#connecting-flow"></a></h4>
    <p>Each runner is started by the orchestrator using a command defined in the pipeline via <code>rdfc:command</code>.
 The orchestrator appends two arguments to this command: the URL of the orchestrator’s Protobuf server and the IRI that uniquely identifies the runner.</p>
    <p>Upon startup, the runner MUST connect to the orchestrator using the provided URL via the <code>RPC.connect</code> method.
@@ -2745,7 +2671,7 @@ The runner MAY ignore this message.</p>
    <div class="issue" id="issue-71f8bb7b"><a class="self-link" href="#issue-71f8bb7b"></a>
 🚧 More information about the log stream is coming soon.
 </div>
-   <h4 class="heading settled" data-level="7.3.3" id="starting-processors①"><span class="secno">7.3.3. </span><span class="content">Starting Processors</span><a class="self-link" href="#starting-processors①"></a></h4>
+   <h4 class="heading settled" data-level="6.3.3" id="starting-processors①"><span class="secno">6.3.3. </span><span class="content">Starting Processors</span><a class="self-link" href="#starting-processors①"></a></h4>
    <p>After initialization, the orchestrator may send multiple <code>RPC.proc</code> messages to instruct the runner to start specific processors.
 Each message includes a processor IRI, a configuration object and an argument object.
 Both the configuration and arguments are provided as JSON-LD strings.
@@ -2758,20 +2684,20 @@ Runners are RECOMMENDED to replace these values with appropriate typed objects i
 If any runner signals an error during initialization, the orchestrator MUST abort the pipeline execution.</p>
    <p>Once all processors are successfully initialized, the orchestrator sends an <code>RPC.start</code> message, instructing the runner to start the processors.</p>
    <p>After all processors complete their execution, the runner SHOULD gracefully close the normal stream to signal completion.</p>
-   <h4 class="heading settled" data-level="7.3.4" id="handling-messages①"><span class="secno">7.3.4. </span><span class="content">Handling messages</span><a class="self-link" href="#handling-messages①"></a></h4>
+   <h4 class="heading settled" data-level="6.3.4" id="handling-messages①"><span class="secno">6.3.4. </span><span class="content">Handling messages</span><a class="self-link" href="#handling-messages①"></a></h4>
    <p>Apart from starting processors, the runner also acts as a mediator that makes sure the correct messages are sent to the correct processors.
 The orchestrator MAY send any number of <code>RPC.msg</code> or <code>RPC.streamMsg</code> messages.</p>
-   <h5 class="heading settled" data-level="7.3.4.1" id="receiving-normal-messages"><span class="secno">7.3.4.1. </span><span class="content">Receiving normal messages</span><a class="self-link" href="#receiving-normal-messages"></a></h5>
+   <h5 class="heading settled" data-level="6.3.4.1" id="receiving-normal-messages"><span class="secno">6.3.4.1. </span><span class="content">Receiving normal messages</span><a class="self-link" href="#receiving-normal-messages"></a></h5>
    <p>When an <code>RPC.msg</code> is received, the runner MUST deliver the message to the appropriate processor, using the channel IRI to determine the correct target.
 Message routing can follow either a push or pull model depending on the language environment.</p>
    <p>Runners MAY coerce or transform messages into a different representation, including converting a normal message into a streaming message with a single chunk or converting a short streaming message into a normal message.
 These transformations SHOULD respect the preferences of the processor and the runner’s internal design constraints.</p>
-   <h5 class="heading settled" data-level="7.3.4.2" id="receiving-streaming-messages"><span class="secno">7.3.4.2. </span><span class="content">Receiving streaming messages</span><a class="self-link" href="#receiving-streaming-messages"></a></h5>
+   <h5 class="heading settled" data-level="6.3.4.2" id="receiving-streaming-messages"><span class="secno">6.3.4.2. </span><span class="content">Receiving streaming messages</span><a class="self-link" href="#receiving-streaming-messages"></a></h5>
    <p>When an <code>RPC.streamMsg</code> is received, the runner MUST establish a streaming channel by invoking the <code>RPC.receiveStreamMessage</code> method with the provided stream ID.
 This initiates a stream of chunks from the orchestrator.</p>
    <p>The runner MUST forward these chunks to the appropriate processor, using any internal buffering or transformation logic as required.</p>
    <p>If the runner determines that the message size is small enough, it MAY convert a streaming message into a single message object, provided that this does not violate processor expectations or exceed system limits.</p>
-   <h5 class="heading settled" data-level="7.3.4.3" id="sending-messages"><span class="secno">7.3.4.3. </span><span class="content">Sending messages</span><a class="self-link" href="#sending-messages"></a></h5>
+   <h5 class="heading settled" data-level="6.3.4.3" id="sending-messages"><span class="secno">6.3.4.3. </span><span class="content">Sending messages</span><a class="self-link" href="#sending-messages"></a></h5>
    <p>Runners must also support outbound communication from processors.
 While runners MAY omit support for certain advanced features (such as streaming output), a full implementation is strongly encouraged.</p>
    <p>To send a normal message, the runner uses the <code>RPC.msg</code> method on the normal stream.</p>
@@ -2780,28 +2706,21 @@ The orchestrator responds with a single message, the stream ID.</p>
    <p>The runner then sends an <code>RPC.streamMsg</code> on the normal stream, including the channel IRI and stream ID.
 Finally, the runner streams the message content using the created stream.
 The message is considered complete when the runner closes the stream.</p>
-   <h5 class="heading settled" data-level="7.3.4.4" id="channel-closure"><span class="secno">7.3.4.4. </span><span class="content">Channel Closure</span><a class="self-link" href="#channel-closure"></a></h5>
+   <h5 class="heading settled" data-level="6.3.4.4" id="channel-closure"><span class="secno">6.3.4.4. </span><span class="content">Channel Closure</span><a class="self-link" href="#channel-closure"></a></h5>
    <p>Processors may indicate that a given channel is closed (i.e., no further messages will be sent).
 The runner MUST propagate this information to the orchestrator via an RPC.close message.</p>
    <p>Similarly, when the orchestrator sends an RPC.close message for a channel, the runner MAY respond by closing or invalidating the corresponding data stream in the processor.</p>
-   <h3 class="heading settled" data-level="7.4" id="processor①"><span class="secno">7.4. </span><span class="content">Processor</span><a class="self-link" href="#processor①"></a></h3>
+   <h3 class="heading settled" data-level="6.4" id="processor①"><span class="secno">6.4. </span><span class="content">Processor</span><a class="self-link" href="#processor①"></a></h3>
+   <div class="issue" id="issue-4e16af14"><a class="self-link" href="#issue-4e16af14"></a>
+🚧 This section is a work in progress and will be expanded soon.
+</div>
+   <h3 class="heading settled" data-level="6.5" id="pipeline①"><span class="secno">6.5. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline①"></a></h3>
    <div class="issue" id="issue-4e16af14①"><a class="self-link" href="#issue-4e16af14①"></a>
 🚧 This section is a work in progress and will be expanded soon.
 </div>
-   <h3 class="heading settled" data-level="7.5" id="pipeline①"><span class="secno">7.5. </span><span class="content">Pipeline</span><a class="self-link" href="#pipeline①"></a></h3>
-   <div class="issue" id="issue-4e16af14②"><a class="self-link" href="#issue-4e16af14②"></a>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
-   <h2 class="heading settled" data-level="8" id="ontology-reference"><span class="secno">8. </span><span class="content">Ontology Reference</span><a class="self-link" href="#ontology-reference"></a></h2>
+   <h2 class="heading settled" data-level="7" id="ontology-reference"><span class="secno">7. </span><span class="content">Ontology Reference</span><a class="self-link" href="#ontology-reference"></a></h2>
    <p>The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full <a href="https://w3id.org/rdf-connect/ontology.ttl">RDF-Connect Ontology</a> for details.</p>
-   <h2 class="heading settled" data-level="9" id="putting-it-all-together-example-flow-and-use-case"><span class="secno">9. </span><span class="content">Putting It All Together: Example Flow and Use Case</span><a class="self-link" href="#putting-it-all-together-example-flow-and-use-case"></a></h2>
-   <div class="issue" id="issue-4e16af14③"><a class="self-link" href="#issue-4e16af14③"></a>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
-<script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-  mermaid.initialize({ startOnLoad: true });
-</script>
+   <script src="./scripts.js" type="module"></script>
   </main>
   <div data-fill-with="conformance">
    <h2 class="no-ref no-num heading settled" id="conformance"><span class="content">
@@ -2979,18 +2898,12 @@ The runner MUST propagate this information to the orchestrator via an RPC.close 
   <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
    <div class="issue">
-🚧 This section is a work in progress and will be expanded soon.
- <a class="issue-return" href="#issue-4e16af14" title="Jump to section">↵</a></div>
-   <div class="issue">
 🚧 More information about the log stream is coming soon.
  <a class="issue-return" href="#issue-71f8bb7b" title="Jump to section">↵</a></div>
    <div class="issue">
 🚧 This section is a work in progress and will be expanded soon.
+ <a class="issue-return" href="#issue-4e16af14" title="Jump to section">↵</a></div>
+   <div class="issue">
+🚧 This section is a work in progress and will be expanded soon.
  <a class="issue-return" href="#issue-4e16af14①" title="Jump to section">↵</a></div>
-   <div class="issue">
-🚧 This section is a work in progress and will be expanded soon.
- <a class="issue-return" href="#issue-4e16af14②" title="Jump to section">↵</a></div>
-   <div class="issue">
-🚧 This section is a work in progress and will be expanded soon.
- <a class="issue-return" href="#issue-4e16af14③" title="Jump to section">↵</a></div>
   </div>
