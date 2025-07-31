@@ -32,12 +32,12 @@ flowchart TD
     end
     direction LR
     
-    P1 w1@-.-|writes| A@{ shape: processes, label: "Channel" }
-    P3 w3@-.-|writes| A
-    P4 w4@-.-|writes| A
-    P2 r2@-.-|reads| A
-    P3 r3@-.-|reads| A
-    P4 r4@-.-|reads| A
+      P1 w1@-.-|1: writes| A@{ shape: processes, label: "Channel" }
+      P3 w3@-.-|5: writes| A
+      P4 w4@-.-|3: writes| A
+      P2 r2@-.-|6: reads| A
+      P3 r3@-.-|4: reads| A
+      P4 r4@-.-|2: reads| A
     classDef animateRead stroke-dasharray: 9,5,stroke-dashoffset: 900,animation: dash 25s linear infinite reverse;
     class r2,r3,r4 animateRead
     classDef animateWrite stroke-dasharray: 9,5,stroke-dashoffset: 900,animation: dash 25s linear infinite;
@@ -65,7 +65,7 @@ sequenceDiagram
     end
     loop For every runner
         O-->>R: RPC.Start: Start
-        loop For every Processor
+        loop For every processor
             R-->>P: Start
         end
     end
@@ -91,7 +91,7 @@ sequenceDiagram
         P1 -->> R1: Data chunks
         R1 -->> O: Data chunks over stream
         O -->> R2: Data chunks over stream
-        R2 -->>P2: Data chnuks
+        R2 -->>P2: Data chunks
     end
 `
 };
