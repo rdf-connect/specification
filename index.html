@@ -1488,8 +1488,8 @@ Possible extra rowspan handling
 		}
 	}
 </style>
-  <meta content="Bikeshed version 275834c42, updated Wed Jun 11 14:18:15 2025 -0700" name="generator">
-  <meta content="c13bb1f8fced77e1ab3544b6c9143998cd083861" name="revision">
+  <meta content="Bikeshed version 3f621ba99, updated Mon Jul 28 15:38:36 2025 -0700" name="generator">
+  <meta content="27520309a585ee832d19da44894715ac4da9558f" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" rel="stylesheet">
 <style>/* Boilerplate: style-autolinks */
@@ -2016,7 +2016,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">RDF-Connect Specification</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Living Standard,
-    <time class="dt-updated" datetime="2025-06-26">26 June 2025</time></span></h2>
+    <time class="dt-updated" datetime="2025-07-31">31 July 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Issue Tracking:
@@ -2030,7 +2030,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 26 June 2025,
+In addition, as of 31 July 2025,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2162,7 +2162,7 @@ Data flows between processors via a central orchestrator, supporting real-time a
 This streaming model ensures efficient memory usage and enables continuous transformation and publication of data as it is ingested.</p>
    <p>The configuration of pipelines, processors, inputs, and outputs is expressed semantically using RDF.
 This use of <strong>semantic configuration</strong> promotes clarity, extensibility, and interoperability by describing the structure and behavior of the system in a machine-readable, standards-based format.</p>
-   <p>Processor components in RDF Connect are designed for <strong>reusability</strong>.
+   <p>Processor components in RDF-Connect are designed for <strong>reusability</strong>.
 A processor defined once can be reused across multiple pipelines and in varying contexts, reducing duplication and encouraging modular design practices.
 This modularity fosters rapid prototyping and easier maintenance of complex workflows.</p>
    <p><strong>Transparency</strong> is a fundamental goal of the framework.
@@ -2182,7 +2182,7 @@ The pipeline configuration itself is expressed in RDF, making it semantically ex
    <p>A <em>processor</em> is a modular, reusable software component that performs a discrete data processing task.
 In a typical scenario, a <em>processor</em> receives input data through a <em>reader</em>, transforms it according to its logic, and emits the result via a <em>writer</em>.
 However, processors are also flexible enough to support single-directional tasks, such as those that only produce or only consume data.
-Crucially, processors are implementation-agnostic --- they can be written in any programming language and integrated into pipelines via language-specific runners.
+Crucially, processors are implementation-agnostic — they can be written in any programming language and integrated into pipelines via language-specific runners.
 This makes processors the building blocks of RDF-Connect’s cross-language interoperability.</p>
    <h3 class="heading settled" data-level="4.3" id="runner"><span class="secno">4.3. </span><span class="content">Runner</span><a class="self-link" href="#runner"></a></h3>
    <p>A <em>runner</em> is responsible for executing a <em>processor</em> on behalf of the <em>orchestrator</em>.
@@ -2211,14 +2211,14 @@ These SHACL shapes enable:</p>
      <p>Type-safe interpretation in environments like JavaScript/TypeScript.</p>
    </ul>
    <p>Shapes define required and optional configuration properties, which are transformed into JSON objects at startup, according to the pipeline.</p>
-   <div class="example" id="example-1373adae" title="From SHACL to JSON configuration">
-    <a class="self-link" href="#example-1373adae"></a>
+   <div class="example" id="example-0b95c2c1" title="From SHACL to JSON configuration">
+    <a class="self-link" href="#example-0b95c2c1"></a>
     This SHACL shape definition defines a configuration structure for a processor.
     In RDF-Connect, such shapes are used to describe required parameters.
     They result in a well-typed JSON object that developers can rely on during implementation.
 
 
-    <p>Shacl shape defining some required configuration for a processor</p>
+    <p>SHACL shape defining some required configuration for a processor</p>
 <pre class="language-turtle highlight"><c- p>[]</c-> <c- b>a</c-> <c- nn>sh</c-><c- p>:</c-><c- f>NodeShape</c-><c- p>;</c->
     <c- nn>sh</c-><c- p>:</c-><c- f>targetClass</c-> <c- g>&lt;FooBar></c-><c- p>;</c->
     <c- nn>sh</c-><c- p>:</c-><c- f>property</c-> <c- p>[</c->
@@ -2370,37 +2370,37 @@ This enables language-independent and efficient communication across processes a
 The orchestrator starts all runners and notifies the runners of the different processors they should start.
 The orchestrator is also the message post office, allowing messages to be sent to the correct runner which will relay those messages to the correct processor.</p>
    <h3 class="heading settled" data-level="6.1" id="communication-protocol-orchestrator--runner"><span class="secno">6.1. </span><span class="content">Communication Protocol: Orchestrator ↔ Runner</span><a class="self-link" href="#communication-protocol-orchestrator--runner"></a></h3>
-   <p>RDF Connect uses a bidirectional communication protocol based on Protocol Buffers (protobuf) for interaction between the <strong>Orchestrator</strong> and <strong>Runners</strong>.
+   <p>RDF-Connect uses a bidirectional communication protocol based on Protocol Buffers (protobuf) for interaction between the <strong>Orchestrator</strong> and <strong>Runners</strong>.
 The orchestrator manages execution, while runners host and execute individual processors.</p>
    <h4 class="heading settled" data-level="6.1.1" id="messages-sent-to-runners"><span class="secno">6.1.1. </span><span class="content">Messages Sent to Runners</span><a class="self-link" href="#messages-sent-to-runners"></a></h4>
    <p>The orchestrator can send the following messages to the runner:</p>
    <ul>
     <li data-md>
-     <p>Rpc.pipeline: Contains the complete pipeline configuration (in Turtle syntax).</p>
+     <p><code>RPC.pipeline</code>: Contains the complete pipeline configuration (in Turtle syntax).</p>
     <li data-md>
-     <p>Rpc.proc: Instructs the runner to register and setup a new processor.</p>
+     <p><code>RPC.proc</code>: Instructs the runner to register and setup a new processor.</p>
     <li data-md>
-     <p>Rpc.start: Signals that all added processors should begin execution.</p>
+     <p><code>RPC.start</code>: Signals that all added processors should begin execution.</p>
     <li data-md>
-     <p>Rpc.close: Instructs the runner to gracefully shut down and terminate all processors.</p>
+     <p><code>RPC.close</code>: Instructs the runner to gracefully shut down and terminate all processors.</p>
     <li data-md>
-     <p>Rpc.msg: Delivers a message to a specific processor. Used for normal data transfer.</p>
+     <p><code>RPC.msg</code>: Delivers a message to a specific processor. Used for normal data transfer.</p>
     <li data-md>
-     <p>Rpc.streamMsg: Begins a streaming message transmission to a processor, typically for large or chunked payloads.</p>
+     <p><code>RPC.streamMsg</code>: Begins a streaming message transmission to a processor, typically for large or chunked payloads.</p>
    </ul>
    <h4 class="heading settled" data-level="6.1.2" id="messages-sent-from-runners"><span class="secno">6.1.2. </span><span class="content">Messages Sent from Runners</span><a class="self-link" href="#messages-sent-from-runners"></a></h4>
    <p>The runner can send the following messages to the orchestrator:</p>
    <ul>
     <li data-md>
-     <p>Rpc.identify:  Indicates that the runner is ready and provides their unique identifier (IRI).</p>
+     <p><code>RPC.identify</code>:  Indicates that the runner is ready and provides their unique identifier (IRI).</p>
     <li data-md>
-     <p>Rpc.init: Confirms that a previously registered <strong>processor</strong> has successfully started.</p>
+     <p><code>RPC.init</code>: Confirms that a previously registered <strong>processor</strong> has successfully started.</p>
     <li data-md>
-     <p>Rpc.close: Notifies that the runner is shutting down because all processors have stopped.</p>
+     <p><code>RPC.close</code>: Notifies that the runner is shutting down because all processors have stopped.</p>
     <li data-md>
-     <p>Rpc.msg: Sends a message from a processor to another processor via the orchestrator.</p>
+     <p><code>RPC.msg</code>: Sends a message from a processor to another processor via the orchestrator.</p>
     <li data-md>
-     <p>Rpc.streamMsg: Sends a streaming message from a processor. Used when the payload is too large for a single message.</p>
+     <p><code>RPC.streamMsg</code>: Sends a streaming message from a processor. Used when the payload is too large for a single message.</p>
    </ul>
    <h3 class="heading settled" data-level="6.2" id="orchestrator①"><span class="secno">6.2. </span><span class="content">Orchestrator</span><a class="self-link" href="#orchestrator①"></a></h3>
    <p>The orchestrator is the central runtime entity in RDF-Connect.
@@ -2439,12 +2439,12 @@ Each pair includes:</p>
     <li data-md>
      <p>One or more processors, referenced with the <code>rdfc:processor</code> property.</p>
    </ul>
-   <div class="example" id="example-785913cb" title="Pipeline definition">
-    <a class="self-link" href="#example-785913cb"></a>
+   <div class="example" id="example-dbea5f0a" title="Pipeline definition">
+    <a class="self-link" href="#example-dbea5f0a"></a>
 
 
     <p>This example pipeline contains three processors divided over two runners.
-    The orchestrator starts for this pipeline, two runners and provide them with the correct processor configurations.</p>
+    The orchestrator starts this pipeline with two runners and provides them with the correct processor configurations.</p>
 <pre class="language-turtle highlight"><c- k>@prefix</c-> <c- nn>rdfc:</c-> <c- g>&lt;https://w3id.org/rdf-connect/ontology#></c-><c- p>.</c->
 
 <c- g>&lt;></c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Pipeline</c-><c- p>;</c->
@@ -2467,7 +2467,7 @@ Each pair includes:</p>
    </ul>
    <aside class="note">
     
-    The property <code>rdfc:handlesSubjectsOf</code> plays a somewhat unconventional role. It allows RDF Connect to remain aligned with <a href="https://www.w3.org/TR/prov-o/">PROV-O</a>.
+    The property <code>rdfc:handlesSubjectsOf</code> plays a somewhat unconventional role. It allows RDF-Connect to remain aligned with <a href="https://www.w3.org/TR/prov-o/">PROV-O</a>.
     A runner may link to a predicate such as <code>rdfc:jsImplementationOf</code>, and each JavaScript processor may then declare itself using:
     
 <pre class="language-turtle highlight"><c- g>&lt;FooBar></c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>jsImplementationOf</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Processor</c-><c- p>.</c->
@@ -2493,7 +2493,7 @@ The orchestrator responds to the runner with a <code>RPC.pipeline</code> message
 This pipeline configuration is useful when a runner wants to extract processor arguments themselves, instead of using the provided JSON-LD.</p>
    <p>Once all expected runners have successfully identified themselves, the orchestrator proceeds to the next step in the pipeline initialization sequence.</p>
    <h5 class="heading settled" data-level="6.2.1.3" id="starting-processors"><span class="secno">6.2.1.3. </span><span class="content">Starting processors</span><a class="self-link" href="#starting-processors"></a></h5>
-   <p>Once all runners have been successfully identified via Rpc.identify, the orchestrator proceeds to initialize the processors defined in the pipeline.
+   <p>Once all runners have been successfully identified via <code>RPC.identify</code>, the orchestrator proceeds to initialize the processors defined in the pipeline.
 This involves the extraction and transformation of processor configuration data into a format suitable for consumption by the associated runner.</p>
    <p><strong>Processor Arguments</strong></p>
    <p>Processor arguments are encoded as JSON-LD objects, providing a structured representation of RDF configuration data.
@@ -2549,9 +2549,9 @@ A JSON-LD <code>@context</code> is generated mapping all <code>sh:name</code> va
    <p>In addition to extracting processor instance arguments, the orchestrator MUST also extract the processor definition configuration. This definition provides implementation-specific parameters, typically required to launch the processor in a specific runtime (e.g., JavaScript entrypoints, file paths, class names, etc.).</p>
    <p>Processor definitions are extracted using the same SHACL-based mechanism described previously. The shape used for this extraction is associated with the programming language or runtime type and MUST be processed in the same way to produce a structured JSON-LD object.</p>
    <p><strong>RPC message</strong></p>
-   <p>Once both the arguments and definition have been extracted for a processor instance, the orchestrator sends an <code>Rpc.proc</code> message to the appropriate runner, initiating the processor launch process.</p>
+   <p>Once both the arguments and definition have been extracted for a processor instance, the orchestrator sends an <code>RPC.proc</code> message to the appropriate runner, initiating the processor launch process.</p>
    <p>The orchestrator MUST keep an internal record of all processor instance that have been dispatched to a runner, and the runner’s acknowledgment that a processor was successfully launched, as indicated by an incoming <code>Rpc.init</code> message.</p>
-   <p>No processor may be assumed to be operational until its runner has responded with <code>Rpc.init</code>.
+   <p>No processor may be assumed to be operational until its runner has responded with <code>RPC.init</code>.
 When all processors are successfully initialized, the orchestrator can start the pipeline.</p>
    <h5 class="heading settled" data-level="6.2.1.4" id="starting-the-pipeline"><span class="secno">6.2.1.4. </span><span class="content">Starting the pipeline</span><a class="self-link" href="#starting-the-pipeline"></a></h5>
    <p>The orchestrator can start the pipeline by sending a <code>RPC.start</code> message to each runner.</p>
@@ -2562,7 +2562,7 @@ When all processors are successfully initialized, the orchestrator can start the
 It is responsible for receiving messages from runners and forwarding them to the appropriate destination runners based on channel identifiers defined in the pipeline.
 Importantly, channels support <strong>many-to-many</strong> communication: multiple processors may emit to or receive from the same channel.</p>
    <h5 class="heading settled" data-level="6.2.2.1" id="normal-messages"><span class="secno">6.2.2.1. </span><span class="content">Normal messages</span><a class="self-link" href="#normal-messages"></a></h5>
-   <p>When a runner sends a <code>Rpc.msg</code> message to the orchestrator, the message includes a channel IRI indicating its logical destination.</p>
+   <p>When a runner sends a <code>RPC.msg</code> message to the orchestrator, the message includes a channel IRI indicating its logical destination.</p>
    <p>The orchestrator MUST:</p>
    <ol>
     <li data-md>
@@ -2570,7 +2570,7 @@ Importantly, channels support <strong>many-to-many</strong> communication: multi
     <li data-md>
      <p>Determine which runner is responsible for each of those processors.</p>
     <li data-md>
-     <p>Forward the message to each relevant runner using <code>Rpc.msg</code>.</p>
+     <p>Forward the message to each relevant runner using <code>RPC.msg</code>.</p>
    </ol>
    <p>These messages are sent as discrete units and fit within the allowed message size.</p>
 <pre class="mermaid" id="message"></pre>
@@ -2584,9 +2584,9 @@ This protocol enables large messages to be sent incrementally over a separate gR
     <li data-md>
      <p>The <strong>orchestrator</strong> generates a unique stream identifier and sends it back on this stream.</p>
     <li data-md>
-     <p>The <strong>sender</strong> then sends a <code>Rpc.streamMsg</code> over the normal bidirectional RPC stream, including the stream identifier and the channel IRI.</p>
+     <p>The <strong>sender</strong> then sends a <code>RPC.streamMsg</code> over the normal bidirectional RPC stream, including the stream identifier and the channel IRI.</p>
     <li data-md>
-     <p>The <strong>orchestrator</strong> resolves which processors receive messages on the given channel and forwards the stream identifier to their corresponding runners with <code>Rpc.streamMsg</code>.</p>
+     <p>The <strong>orchestrator</strong> resolves which processors receive messages on the given channel and forwards the stream identifier to their corresponding runners with <code>RPC.streamMsg</code>.</p>
     <li data-md>
      <p><strong>Receiving runners</strong> connect to the orchestrator using <code>receiveStreamMessage</code>, passing the received stream identifier.</p>
     <li data-md>
@@ -2602,7 +2602,7 @@ Each runner MUST connect with the orchestrator’s Protobuf server and follow th
    <p>These quality-of-life features include:</p>
    <ul>
     <li data-md>
-     <p>Wrapping readers and writer in idiomatic objects</p>
+     <p>Wrapping readers and writers in idiomatic objects</p>
     <li data-md>
      <p>Runners SHOULD also make it possible to let processors start up before acknowledging to the orchestrator that the processor is initialized.</p>
    </ul>
@@ -2624,11 +2624,11 @@ This flexibility allows generic processors to be implemented more easily without
    <h4 class="heading settled" data-level="6.3.1" id="pipeline-configuration"><span class="secno">6.3.1. </span><span class="content">Pipeline Configuration</span><a class="self-link" href="#pipeline-configuration"></a></h4>
    <p>A runner is defined with an instance of <code>rdfc:Runner</code>, which currently is instantiated by a command.
 It requires the command to actually start the runner with <code>rdfc:command</code>, and a link to the programming context (<code>rdfc:handlesSubjectsOf</code>).
-The object of <code>rdfc:handlesSubjectsOf</code>, links runners and processors to a context term. This often refers to the programming language.</p>
+The object of <code>rdfc:handlesSubjectsOf</code> links runners and processors to a context term. This often refers to the programming language.</p>
    <p>Each context term is related to a SHACL shape, this specifies the incoming data that the runner can use to start the processors.</p>
-   <div class="example" id="example-7ae323f3">
-    <a class="self-link" href="#example-7ae323f3"></a>
-For example, the NodeRunner, a runner that starts JavaScript processors with node, is defined as follows.
+   <div class="example" id="example-9a413371">
+    <a class="self-link" href="#example-9a413371"></a>
+The NodeRunner, for example, is a program that starts JavaScript processors with Node. It is defined as follows:
 
 
 <pre class="language-turtle highlight"><c- nn>rdfc</c-><c- p>:</c-><c- f>NodeRunner</c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Runner</c-><c- p>;</c->
@@ -2676,9 +2676,9 @@ The runner MAY ignore this message.</p>
 Each message includes a processor IRI, a configuration object and an argument object.
 Both the configuration and arguments are provided as JSON-LD strings.
 The configuration object contains the arguments as defined by the context term following the section <a href="#mapping-shacl-to-configuration-structures">Mapping SHACL to Configuration Structures</a>.
-The arguments are constructed based on a SHACL shape defined for the processor type</p>
-   <p>Runners are MAY to parse these JSON-LD payloads and transform known constructs into idiomatic equivalents.
-For example reader and writer objects are represented as JSON-LD values with: an @id field (containing the channel IRI), and an @type field indicating either <code>https://w3id.org/rdf-connect/ontology#Reader</code> or <code>https://w3id.org/rdf-connect/ontology#Writer</code>.
+The arguments are constructed based on a SHACL shape defined for the processor type.</p>
+   <p>Runners MAY parse these JSON-LD payloads and transform known constructs into idiomatic equivalents.
+For example, reader and writer objects are represented as JSON-LD values with: an <code>@id</code> field (containing the channel IRI), and an <code>@type</code> field indicating either <code>https://w3id.org/rdf-connect/ontology#Reader</code> or <code>https://w3id.org/rdf-connect/ontology#Writer</code>.
 Runners are RECOMMENDED to replace these values with appropriate typed objects in the target environment.</p>
    <p>When a processor has been fully initialized, the runner MUST send an <code>RPC.init</code> message, indicating success or failure.
 If any runner signals an error during initialization, the orchestrator MUST abort the pipeline execution.</p>
@@ -2698,7 +2698,7 @@ This initiates a stream of chunks from the orchestrator.</p>
    <p>The runner MUST forward these chunks to the appropriate processor, using any internal buffering or transformation logic as required.</p>
    <p>If the runner determines that the message size is small enough, it MAY convert a streaming message into a single message object, provided that this does not violate processor expectations or exceed system limits.</p>
    <h5 class="heading settled" data-level="6.3.4.3" id="sending-messages"><span class="secno">6.3.4.3. </span><span class="content">Sending messages</span><a class="self-link" href="#sending-messages"></a></h5>
-   <p>Runners must also support outbound communication from processors.
+   <p>Runners MUST also support outbound communication from processors.
 While runners MAY omit support for certain advanced features (such as streaming output), a full implementation is strongly encouraged.</p>
    <p>To send a normal message, the runner uses the <code>RPC.msg</code> method on the normal stream.</p>
    <p>To send a streaming message, the runner first initiates the <code>RPC.sendStreamMessage</code> method, which returns a new stream.
@@ -2707,9 +2707,9 @@ The orchestrator responds with a single message, the stream ID.</p>
 Finally, the runner streams the message content using the created stream.
 The message is considered complete when the runner closes the stream.</p>
    <h5 class="heading settled" data-level="6.3.4.4" id="channel-closure"><span class="secno">6.3.4.4. </span><span class="content">Channel Closure</span><a class="self-link" href="#channel-closure"></a></h5>
-   <p>Processors may indicate that a given channel is closed (i.e., no further messages will be sent).
-The runner MUST propagate this information to the orchestrator via an RPC.close message.</p>
-   <p>Similarly, when the orchestrator sends an RPC.close message for a channel, the runner MAY respond by closing or invalidating the corresponding data stream in the processor.</p>
+   <p>Processors MAY indicate that a given channel is closed (i.e., no further messages will be sent).
+The runner MUST propagate this information to the orchestrator via an <code>RPC.close</code> message.</p>
+   <p>Similarly, when the orchestrator sends an <code>RPC.close</code> message for a channel, the runner MAY respond by closing or invalidating the corresponding data stream in the processor.</p>
    <h3 class="heading settled" data-level="6.4" id="processor①"><span class="secno">6.4. </span><span class="content">Processor</span><a class="self-link" href="#processor①"></a></h3>
    <div class="issue" id="issue-4e16af14"><a class="self-link" href="#issue-4e16af14"></a>
 🚧 This section is a work in progress and will be expanded soon.
