@@ -394,7 +394,7 @@ Each pair includes:
     The orchestrator starts this pipeline with two runners and provides them with the correct processor configurations.
 
 ```turtle
-@prefix rdfc: <https://w3id.org/rdf-connect/ontology#>.
+@prefix rdfc: <https://w3id.org/rdf-connect#>.
 
 <> a rdfc:Pipeline;
   rdfc:consistsOf [
@@ -500,7 +500,7 @@ A JSON-LD `@context` is generated mapping all `sh:name` values to the correspond
     "@id": "SomeId",
     "@type": "FooBar",
     "reader": {
-        "@type": "https://w3id.org/rdf-connect/ontology#Reader",
+        "@type": "https://w3id.org/rdf-connect#Reader",
         "@id": "ReaderId"
     },
     "count": 42
@@ -679,7 +679,7 @@ The configuration object contains the arguments as defined by the context term f
 The arguments are constructed based on a SHACL shape defined for the processor type.
 
 Runners MAY parse these JSON-LD payloads and transform known constructs into idiomatic equivalents. 
-For example, reader and writer objects are represented as JSON-LD values with: an `@id` field (containing the channel IRI), and an `@type` field indicating either `https://w3id.org/rdf-connect/ontology#Reader` or `https://w3id.org/rdf-connect/ontology#Writer`.
+For example, reader and writer objects are represented as JSON-LD values with: an `@id` field (containing the channel IRI), and an `@type` field indicating either `https://w3id.org/rdf-connect#Reader` or `https://w3id.org/rdf-connect#Writer`.
 Runners are RECOMMENDED to replace these values with appropriate typed objects in the target environment.
 
 When a processor has been fully initialized, the runner MUST send an `RPC.init` message, indicating success or failure.
