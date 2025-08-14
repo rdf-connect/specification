@@ -1489,7 +1489,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version 3f621ba99, updated Mon Jul 28 15:38:36 2025 -0700" name="generator">
-  <meta content="27520309a585ee832d19da44894715ac4da9558f" name="revision">
+  <meta content="9f66515a2a45b0812e41aa8dab92f0c2c60d9c11" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" rel="stylesheet">
 <style>/* Boilerplate: style-autolinks */
@@ -2016,7 +2016,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">RDF-Connect Specification</h1>
    <h2 class="no-num no-toc no-ref heading settled" id="profile-and-date"><span class="content">Living Standard,
-    <time class="dt-updated" datetime="2025-07-31">31 July 2025</time></span></h2>
+    <time class="dt-updated" datetime="2025-08-14">14 August 2025</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Issue Tracking:
@@ -2030,7 +2030,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 31 July 2025,
+In addition, as of 14 August 2025,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2439,13 +2439,13 @@ Each pair includes:</p>
     <li data-md>
      <p>One or more processors, referenced with the <code>rdfc:processor</code> property.</p>
    </ul>
-   <div class="example" id="example-dbea5f0a" title="Pipeline definition">
-    <a class="self-link" href="#example-dbea5f0a"></a>
+   <div class="example" id="example-d5e10f50" title="Pipeline definition">
+    <a class="self-link" href="#example-d5e10f50"></a>
 
 
     <p>This example pipeline contains three processors divided over two runners.
     The orchestrator starts this pipeline with two runners and provides them with the correct processor configurations.</p>
-<pre class="language-turtle highlight"><c- k>@prefix</c-> <c- nn>rdfc:</c-> <c- g>&lt;https://w3id.org/rdf-connect/ontology#></c-><c- p>.</c->
+<pre class="language-turtle highlight"><c- k>@prefix</c-> <c- nn>rdfc:</c-> <c- g>&lt;https://w3id.org/rdf-connect#></c-><c- p>.</c->
 
 <c- g>&lt;></c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Pipeline</c-><c- p>;</c->
   <c- nn>rdfc</c-><c- p>:</c-><c- f>consistsOf</c-> <c- p>[</c->
@@ -2506,8 +2506,8 @@ However, all runners MUST accept the structure produced by the orchestrator.</p>
 Each field is mapped following section <a href="#mapping-shacl-to-configuration-structures">Mapping SHACL to Configuration Structures</a>.
 A JSON-LD <code>@context</code> is generated mapping all <code>sh:name</code> values to the corresponding IRIs from <code>sh:path</code>.
  If the processor instance has a known RDF identifier or <code>rdf:type</code>, these are added to the JSON-LD using <code>@id</code> and <code>@type</code>.</p>
-   <div class="example" id="example-9bc81fee" title="Example to extract JSON-LD from data and a SHACL shape">
-    <a class="self-link" href="#example-9bc81fee"></a>
+   <div class="example" id="example-09ceb7ca" title="Example to extract JSON-LD from data and a SHACL shape">
+    <a class="self-link" href="#example-09ceb7ca"></a>
     Let’s take this shape, note that the shape also includes a <code>rdfc:Reader</code>.
 
 <pre class="language-turtle highlight"><c- k>@prefix</c-> <c- nn>:</c-> <c- g>&lt;http://example.org/></c-><c- p>.</c->
@@ -2538,7 +2538,7 @@ A JSON-LD <code>@context</code> is generated mapping all <code>sh:name</code> va
     <c- f>"@id"</c-><c- p>:</c-> <c- u>"SomeId"</c-><c- p>,</c->
     <c- f>"@type"</c-><c- p>:</c-> <c- u>"FooBar"</c-><c- p>,</c->
     <c- f>"reader"</c-><c- p>:</c-> <c- p>{</c->
-        <c- f>"@type"</c-><c- p>:</c-> <c- u>"https://w3id.org/rdf-connect/ontology#Reader"</c-><c- p>,</c->
+        <c- f>"@type"</c-><c- p>:</c-> <c- u>"https://w3id.org/rdf-connect#Reader"</c-><c- p>,</c->
         <c- f>"@id"</c-><c- p>:</c-> <c- u>"ReaderId"</c->
     <c- p>},</c->
     <c- f>"count"</c-><c- p>:</c-> <c- mi>42</c->
@@ -2678,7 +2678,7 @@ Both the configuration and arguments are provided as JSON-LD strings.
 The configuration object contains the arguments as defined by the context term following the section <a href="#mapping-shacl-to-configuration-structures">Mapping SHACL to Configuration Structures</a>.
 The arguments are constructed based on a SHACL shape defined for the processor type.</p>
    <p>Runners MAY parse these JSON-LD payloads and transform known constructs into idiomatic equivalents.
-For example, reader and writer objects are represented as JSON-LD values with: an <code>@id</code> field (containing the channel IRI), and an <code>@type</code> field indicating either <code>https://w3id.org/rdf-connect/ontology#Reader</code> or <code>https://w3id.org/rdf-connect/ontology#Writer</code>.
+For example, reader and writer objects are represented as JSON-LD values with: an <code>@id</code> field (containing the channel IRI), and an <code>@type</code> field indicating either <code>https://w3id.org/rdf-connect#Reader</code> or <code>https://w3id.org/rdf-connect#Writer</code>.
 Runners are RECOMMENDED to replace these values with appropriate typed objects in the target environment.</p>
    <p>When a processor has been fully initialized, the runner MUST send an <code>RPC.init</code> message, indicating success or failure.
 If any runner signals an error during initialization, the orchestrator MUST abort the pipeline execution.</p>
