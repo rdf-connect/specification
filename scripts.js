@@ -1,7 +1,7 @@
-import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 
 const mermaids = {
-    "message": `
+  message: `
 sequenceDiagram
     autonumber
     participant P1 as Processor 1
@@ -33,7 +33,7 @@ sequenceDiagram
     end
     Note over P1: Processor is allowed to send a new message
 `,
-    "overview": `
+  overview: `
 flowchart TD
     U(User) -->|starts with pipeline.ttl| O[Orchestrator]
     O -->|instantiates| JS[fab:fa-js Runner]
@@ -62,7 +62,7 @@ flowchart TD
     classDef animateWrite stroke-dasharray: 9,5,stroke-dashoffset: 900,animation: dash 25s linear infinite;
     class w1,w3,w4 animateWrite
 `,
-    "startup": `
+  startup: `
 sequenceDiagram
     autonumber
     participant O as Orchestrator
@@ -106,7 +106,7 @@ sequenceDiagram
         end
     end
 `,
-    "streamMessage": `
+  streamMessage: `
 sequenceDiagram
     autonumber
     participant P1 as Processor 1
@@ -153,17 +153,141 @@ sequenceDiagram
         O->>R1: mainStream(ToRunner{processed: LocalAck{ localSequenceNumber, channel }})
     end
     Note over P1: Processor is allowed to send a new message
-`
+`,
 };
+// Function to fit SVG proportionally
+function fitSVGToScreen(svg, newSvg) {
+  svg.style.width = "auto";
+  svg.style.height = "auto";
+  svg.style.maxWidth = "100%";
+  svg.style.maxHeight = "100%";
+  svg.style.display = "block";
+
+  // Get viewport ratio and SVG ratio
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const bbox = svg.getBBox();
+  const svgRatio = bbox.width / bbox.height;
+  const viewportRatio = vw / vh;
+
+  console.log({ viewportRatio, svgRatio });
+  if (svgRatio > viewportRatio) {
+    // SVG is wider than viewport → fill width
+    newSvg.style.width = "95vw";
+    newSvg.style.height = "auto";
+  } else {
+    // SVG is taller → fill height
+    newSvg.style.width = "auto";
+    newSvg.style.height = "95vh";
+  }
+}
+
+function createModal() {
+  // Create modal
+  const modal = document.createElement("div");
+  modal.style.display = "none";
+  modal.style.position = "fixed";
+  modal.style.inset = "0";
+  modal.style.background = "rgba(0,0,0,0.8)";
+  modal.style.zIndex = "9999";
+  modal.style.justifyContent = "center";
+  modal.style.alignItems = "center";
+  modal.style.overflow = "auto";
+
+  const modalContent = document.createElement("div");
+  modalContent.style.position = "relative";
+  modalContent.style.background = "white";
+  modalContent.style.borderRadius = "8px";
+  modalContent.style.maxWidth = "95vw";
+  modalContent.style.maxHeight = "95vh";
+  modalContent.style.overflow = "auto";
+  modalContent.style.padding = "1rem";
+
+  const closeBtn = document.createElement("button");
+  closeBtn.innerHTML =
+    '<i class="fa-solid fa-down-left-and-up-right-to-center"></i>';
+  closeBtn.style.position = "absolute";
+  closeBtn.style.top = "0.5rem";
+  closeBtn.style.right = "0.5rem";
+  closeBtn.style.color = "dark-grey";
+  closeBtn.style.border = "none";
+  closeBtn.style.padding = "0.5rem 1rem";
+  closeBtn.style.borderRadius = "4px";
+  closeBtn.style.cursor = "pointer";
+
+  const modalDiagram = document.createElement("div");
+  modalDiagram.style.display = "flex";
+  modalDiagram.style.justifyContent = "center";
+  modalDiagram.style.alignItems = "center";
+  modalDiagram.style.width = "100%";
+  modalDiagram.style.height = "100%";
+
+  modalContent.appendChild(closeBtn);
+  modalContent.appendChild(modalDiagram);
+  modal.appendChild(modalContent);
+  document.body.appendChild(modal);
+
+  closeBtn.addEventListener("click", () => (modal.style.display = "none"));
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") modal.style.display = "none";
+  });
+  return [modal, modalDiagram];
+}
+
+function wrapElement(pre, modal, modalDiagram) {
+  // Create a container div
+  const container = document.createElement("div");
+  container.classList.add("wrapper");
+
+  // Insert container before the pre
+  pre.parentNode.insertBefore(container, pre);
+  container.appendChild(pre);
+
+  // Create Full Screen button
+  const btn = document.createElement("button");
+  btn.innerHTML =
+    '<i class="fa-solid fa-up-right-and-down-left-from-center"></i>';
+  btn.style.margin = "0.5rem 0";
+  btn.style.padding = "0.3rem 0.6rem";
+  btn.style.border = "none";
+  btn.style.borderRadius = "4px";
+  btn.style.cursor = "pointer";
+
+  container.insertBefore(btn, pre);
+
+  // Event handlers
+  btn.addEventListener("click", () => {
+    const svg = pre.querySelector("svg");
+    if (!svg) return alert("Diagram not rendered yet!");
+    modalDiagram.innerHTML = "";
+    const newSvg = svg.cloneNode(true);
+    fitSVGToScreen(svg, newSvg);
+    modalDiagram.appendChild(newSvg);
+    modal.style.display = "flex";
+  });
+}
 
 // We do this, as sometimes bikeshed interacts with characters like |
 for (const container of [...document.querySelectorAll(".mermaid")]) {
-    const content = mermaids[container.id]
-    if (!content) {
-        console.log(`Failed to find ${container.id} in ${Object.keys(mermaids)} `)
-        continue
-    }
-    container.innerHTML = content;
+  const content = mermaids[container.id];
+  if (!content) {
+    console.log(`Failed to find ${container.id} in ${Object.keys(mermaids)} `);
+    continue;
+  }
+  container.innerHTML = content;
 }
 
 mermaid.initialize({ startOnLoad: true });
+
+const [modal, modalDiagram] = createModal();
+window.addEventListener("resize", () => {
+  const svg = modalDiagram.querySelector("svg");
+  if (svg) fitSVGToScreen(svg, svg);
+});
+for (const container of [...document.querySelectorAll(".mermaid")]) {
+  wrapElement(container, modal, modalDiagram);
+}

@@ -10,6 +10,10 @@ Abstract: Some abstract
 </pre>
 
 <link rel=stylesheet href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css">
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+/>
 
 # Introduction
 
@@ -603,7 +607,7 @@ These quality-of-life features include:
 
 This is useful for processor to execute longer running operations, like reading a file or consulting an external API.
 
-Runners MAY also coalesce or transform message types to simplify processor implementation.
+Runners SHOULD coalesce or transform message types to simplify processor implementation.
 A streaming message may be aggregated into a single message if the underlying platform supports arbitrarily large strings or buffers,
 and a single message may be exposed to the processor as a streaming interface, emitting a single chunk.
 This flexibility allows generic processors to be implemented more easily without needing to distinguish between streaming and single-message protocols.
@@ -627,6 +631,8 @@ It requires the command to actually start the runner with `rdfc:command`, and a 
 The object of `rdfc:handlesSubjectsOf` links runners and processors to a context term. This often refers to the programming language.
 
 Each context term is related to a SHACL shape, this specifies the incoming data that the runner can use to start the processors.
+
+The full ontology can be found [online](https://rdf-connect.github.io/ontology/).
 
 <div class=example>
 The NodeRunner, for example, is a program that starts JavaScript processors with Node. It is defined as follows:
@@ -675,11 +681,24 @@ Once connected, the runner MUST send an `RPC.identify` message, identifying itse
 The orchestrator then sends an `RPC.pipeline` message containing the complete, expanded pipeline definition.
 The runner MAY ignore this message.
 
-Runners MAY initiate a separate log stream using the `RPC.logStream` method to stream log messages back to the orchestrator.
+Runners MAY initiate a separate log stream using the `RPC.logStream` method to transmit log messages to the orchestrator.
 
-<div class=issue>
-🚧 More information about the log stream is coming soon.
-</div>
+Each log message sent by a runner MUST be an instance of `RPC.LogMessage` transmitted over the `logStream`.
+
+Each `RDC.LogMessage` includes:
+
+- a textual message
+- a log level
+- one or more entities
+- zero or more aliases
+
+The `logLevel` field MUST correspond to one of the log levels supported by Winston `error`, `warn`, `info`, `http`, `verbose`, `debug` and `silly`.
+
+Entities are labels included when logging the message to standard output (stdout).
+Aliases are additional labels that can be used for filtering or correlation but are not displayed in stdout.
+
+Entities and aliases MAY be full URIs. The orchestrator SHOULD shorten URIs using the prefix mappings defined in the pipeline configuration.
+
 
 ### Starting Processors
 
@@ -711,17 +730,23 @@ The orchestrator MAY send any number of `RPC.msg` or `RPC.streamMsg` messages.
 When an `RPC.msg` is received, the runner MUST deliver the message to the appropriate processor, using the channel IRI to determine the correct target.
 Message routing can follow either a push or pull model depending on the language environment.
 
-Runners MAY coerce or transform messages into a different representation, including converting a normal message into a streaming message with a single chunk or converting a short streaming message into a normal message.
+Runners SHOULD coerce or transform messages into a different representation, including converting a normal message into a streaming message with a single chunk or converting a short streaming message into a normal message.
 These transformations SHOULD respect the preferences of the processor and the runner's internal design constraints.
+
+After the message has been handled by the processor, the runner MUST send a `RPC.processed` message back to the orchestrator.
+
 
 #### Receiving streaming messages
 
 When an `RPC.streamMsg` is received, the runner MUST establish a streaming channel by invoking the `RPC.receiveStreamMessage` method with the provided stream ID.
 This initiates a stream of chunks from the orchestrator.
 
-The runner MUST forward these chunks to the appropriate processor, using any internal buffering or transformation logic as required.
+The runner MUST forward these chunks to the appropriate processor. 
+After each chunk the runner MUST send a SendingStreamControl message with an incrementing streamSequenceNumber.
 
-If the runner determines that the message size is small enough, it MAY convert a streaming message into a single message object, provided that this does not violate processor expectations or exceed system limits.
+When the stream is closed, the runner may choose to coalesce all chunks into a single message and forward this to the processor.
+After this optional message is handled, the runner MUST send a `RPC.processed` message back to the orchestrator.
+
 
 #### Sending messages
 
@@ -729,13 +754,13 @@ Runners MUST also support outbound communication from processors.
 While runners MAY omit support for certain advanced features (such as streaming output), a full implementation is strongly encouraged.
 
 To send a normal message, the runner uses the `RPC.msg` method on the `mainStream`.
+The processor is only allowed to send a new message after receiving a `RPC.processed` message.
 
 To send a streaming message, the runner first initiates the `RPC.sendStreamMessage` method, which returns a new stream.
-The orchestrator responds with a single message, the stream ID.
+The orchestrator responds with ReceivingStreamControl message, containing the expected next chunk to receive (starting from 0).
 
-The runner then sends an `RPC.streamMsg` on the `mainStream`, including the channel IRI and stream ID.
-Finally, the runner streams the message content using the created stream.
-The message is considered complete when the runner closes the stream.
+The message is considered complete when the runner closes the stream and the runner received a `RPC.processed` message.
+The processor is only allowed to send a new message after receiving a `RPC.processed` message.
 
 #### Channel Closure
 
@@ -746,9 +771,20 @@ Similarly, when the orchestrator sends an `RPC.close` message for a channel, the
 
 ## Processor
 
-<div class=issue>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
+A processor SHOULD be implemented as generically as possible, while maintaining practical usefulness.
+In most cases, a processor acts as a lightweight wrapper around an existing library that performs a useful task.
+
+In most programming languages, a processor SHOULD implement an interface exposing three methods: initialize, transform, and produce.
+
+- `initialize` — This method is called and awaited before the runner notifies the orchestrator that the processor has been initialized. It is the ideal place to perform setup actions such as connecting to databases or external services.
+- `transform` — This method SHOULD listen for incoming data on input channels. It is started—but not awaited—before sending the initialized notification to ensure no incoming messages are lost.
+- `produce` — This method is responsible for sending messages to output channels. At this stage, all processors in the pipeline are fully initialized and awaiting messages.
+
+A processor SHOULD have access to a logger instance that is integrated with the RDF-Connect logging system, enabling unified and aggregated logging across the pipeline.
+
+Each processor MUST correctly propagate close events.
+
+A transforming processor is considered finished when all of its input channels are closed, and it SHOULD close all corresponding output channels.
 
 
 ## Pipeline
@@ -760,10 +796,23 @@ Similarly, when the orchestrator sends an `RPC.close` message for a channel, the
 
 # Ontology Reference
 
-The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF-Connect Ontology](https://w3id.org/rdf-connect/ontology.ttl) for details.
-
+The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF-Connect Ontology](https://w3id.org/rdf-connect/ontology/) for details.
 
 <script src="./scripts.js" type="module"></script>
 
+<style>
+    .wrapper {
+        position: relative;
+    }
+
+    .wrapper button {
+        position: absolute;
+        top: 0.5rem;
+        left: 100%;
+        color: dark-grey;
+        borderRadius: 4px;
+        cursor: pointer;
+    }
+</style>
 
 
