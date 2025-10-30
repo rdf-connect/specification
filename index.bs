@@ -809,8 +809,8 @@ The RDF-Connect ontology provides the terms used in RDF pipeline definitions. Se
         position: absolute;
         top: 0.5rem;
         left: 100%;
-        color: dark-grey;
-        borderRadius: 4px;
+        color: darkgrey;
+        border-radius: 4px;
         cursor: pointer;
     }
 </style>
