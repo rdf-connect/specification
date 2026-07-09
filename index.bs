@@ -552,12 +552,12 @@ When a runner sends a `RPC.msg` message to the orchestrator, the message include
 
 The orchestrator MUST:
 1. Resolve which processor consumes this channel.
-2. Determine which runner is responsible for this processors.
+2. Determine which runner is responsible for this processor.
 3. Forward the message to the relevant runner using `RPC.msg`.
 
 The consuming runner MUST respond with a `RPC.processed` message that indicates that the processor has consumed the message.
 The orchestrator MUST forward this message to the producing runner.
-Only when the runner received the `RPC.processed` message, the processor is allowed to send a new message.
+Only when the runner received the `RPC.processed` message, the processor is allowed to send a new message on this channel.
 
 
 <pre class="mermaid" id="message">
@@ -569,25 +569,26 @@ Only when the runner received the `RPC.processed` message, the processor is allo
 When the payload of a message is large, the streaming message protocol SHOULD be used.
 This protocol enables large messages to be sent incrementally over a separate gRPC stream while maintaining channel-based routing.
 
-Just like normal messages on the `mainStream` includes each streaming message a back pressure mechanism.
+Just like normal messages on the `mainStream` include a back pressure mechanism, each streaming message also has one.
 
 The process is as follows:
 1. **Sender** (runner) initiates a `sendStreamMessage` gRPC stream to the orchestrator.
 2. **Sender** identifies this stream message by sending a `RPC.StreamIdentify` which includes a `localSequenceNumber`, the channel URI and the runner URI.
-3. The **orchestrator** translates a `globalSequenceNumber` and sends a `RPC.streamMsg` over `mainStream` to the receiving runner with the `globalSequenceNumber` and channel URI.
+3. The **orchestrator** translates this `localSequenceNumber` to a `globalSequenceNumber` and sends a `RPC.streamMsg` over `mainStream` to the receiving runner with the `globalSequenceNumber` and channel URI.
 4. **Receiving runner** connects to the orchestrator using `receiveStreamMessage`, and sends an identifying `StreamControl` with the `globalSequenceNumber`.
-5. Once all receiving runner is connected, the **orchestrator** sends a `StreamControl` message to the Sending runner with a `streamSequenceNumber` value of 0, the stream is set up.
+5. Once the receiving runner is connected, the **orchestrator** sends a `StreamControl` message to the Sending runner with a `streamSequenceNumber` value of 0, indicating that the stream has been established.
 
 
-For each chunk in sending processor generates the following happens:
+For each chunk sent by the sending processor, the following steps MUST take place:
 1. **Sender** sends a StreamChunk message with the data of the chunk to the orchestrator.
 2. The **orchestrator** relays this to the connected `receiveStreamMessage` stream.
-3. The **receiving runner** lets the processor process the chunk.
+3. The **receiving runner** forwards the chunk to the processor, enabling it to  process the data.
 4. The **receiving runner** returns a `StreamControl` message with the next `streamSequenceNumber`, this indicates that the chunk has been handled.
-5. The **orchestrator** relays this to the sending runner.
-6. The **processor** is allowed to generate the next chunk.
+5. The **orchestrator** relays this `StreamControl` message to the sending runner.
+6. The **processor** is permitted to send the next chunk of data.
 
-The orchestrator MUST close the associated receiving stream once the sending stream completes.
+Once all data has been sent, the **sender** closes the stream message stream.
+Then orchestrator MUST close the associated receiving stream, this indicates the end of the streaming message for the **receiving runner**.
 
 <pre class="mermaid" id="streamMessage">
 </pre>
@@ -685,7 +686,7 @@ Runners MAY initiate a separate log stream using the `RPC.logStream` method to t
 
 Each log message sent by a runner MUST be an instance of `RPC.LogMessage` transmitted over the `logStream`.
 
-Each `RDC.LogMessage` includes:
+Each `RPC.LogMessage` MUST includes:
 
 - a textual message
 - a log level
@@ -776,15 +777,15 @@ In most cases, a processor acts as a lightweight wrapper around an existing libr
 
 In most programming languages, a processor SHOULD implement an interface exposing three methods: initialize, transform, and produce.
 
-- `initialize` — This method is called and awaited before the runner notifies the orchestrator that the processor has been initialized. It is the ideal place to perform setup actions such as connecting to databases or external services.
-- `transform` — This method SHOULD listen for incoming data on input channels. It is started—but not awaited—before sending the initialized notification to ensure no incoming messages are lost.
-- `produce` — This method is responsible for sending messages to output channels. At this stage, all processors in the pipeline are fully initialized and awaiting messages.
+- `initialize`: This method is called and awaited before the runner notifies the orchestrator that the processor has been initialized. It is the ideal place to perform setup actions such as connecting to databases or external services.
+- `transform`: This method SHOULD listen for incoming data on input channels and MAY, based on that, write to output channels. It is started (but not awaited) before sending the initialized notification to ensure no incoming messages are lost.
+- `produce`: This method is responsible for sending messages to output channels that are not related to incoming messages on another channel. At this stage, all processors in the pipeline are fully initialized and ready to receive messages.
 
 A processor SHOULD have access to a logger instance that is integrated with the RDF-Connect logging system, enabling unified and aggregated logging across the pipeline.
 
-Each processor MUST correctly propagate close events.
+A transforming processor is considered finished when all of its input channels are closed, and it MUST close all output channels. 
 
-A transforming processor is considered finished when all of its input channels are closed, and it SHOULD close all corresponding output channels.
+Each processor MUST correctly propagate close events, so no stale channels exist.
 
 
 ## Pipeline
