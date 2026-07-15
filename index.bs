@@ -582,7 +582,7 @@ The process is as follows:
 For each chunk sent by the sending processor, the following steps MUST take place:
 1. **Sender** sends a StreamChunk message with the data of the chunk to the orchestrator.
 2. The **orchestrator** relays this to the connected `receiveStreamMessage` stream.
-3. The **receiving runner** forwards the chunk to the processor, enabling it to  process the data.
+3. The **receiving runner** forwards the chunk to the processor, enabling it to process the data.
 4. The **receiving runner** returns a `StreamControl` message with the next `streamSequenceNumber`, this indicates that the chunk has been handled.
 5. The **orchestrator** relays this `StreamControl` message to the sending runner.
 6. The **processor** is permitted to send the next chunk of data.
@@ -686,7 +686,7 @@ Runners MAY initiate a separate log stream using the `RPC.logStream` method to t
 
 Each log message sent by a runner MUST be an instance of `RPC.LogMessage` transmitted over the `logStream`.
 
-Each `RPC.LogMessage` MUST includes:
+Each `RPC.LogMessage` MUST include:
 
 - a textual message
 - a log level
@@ -743,7 +743,7 @@ When an `RPC.streamMsg` is received, the runner MUST establish a streaming chann
 This initiates a stream of chunks from the orchestrator.
 
 The runner MUST forward these chunks to the appropriate processor. 
-After each chunk the runner MUST send a SendingStreamControl message with an incrementing streamSequenceNumber.
+After each chunk, the runner MUST send a SendingStreamControl message with an incrementing streamSequenceNumber.
 
 When the stream is closed, the runner may choose to coalesce all chunks into a single message and forward this to the processor.
 After this optional message is handled, the runner MUST send a `RPC.processed` message back to the orchestrator.
