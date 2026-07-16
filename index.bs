@@ -10,6 +10,10 @@ Abstract: Some abstract
 </pre>
 
 <link rel=stylesheet href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css">
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+/>
 
 # Introduction
 
@@ -335,29 +339,30 @@ The orchestrator manages execution, while runners host and execute individual pr
 
 The orchestrator can send the following messages to the runner:
 
-* `RPC.pipeline`: Contains the complete pipeline configuration (in Turtle syntax).
 * `RPC.proc`: Instructs the runner to register and setup a new processor.
 * `RPC.start`: Signals that all added processors should begin execution.
-* `RPC.close`: Instructs the runner to gracefully shut down and terminate all processors.
 * `RPC.msg`: Delivers a message to a specific processor. Used for normal data transfer.
+* `RPC.close`: Indicates to the runner that a channel is closing.
 * `RPC.streamMsg`: Begins a streaming message transmission to a processor, typically for large or chunked payloads.
+* `RPC.pipeline`: Contains the complete pipeline configuration (in Turtle syntax).
+* `RPC.processed`: Indicates that a message has been processed, this can be a normal or a streaming message.
 
 ### Messages Sent from Runners
 
 The runner can send the following messages to the orchestrator:
 
-* `RPC.identify`:  Indicates that the runner is ready and provides their unique identifier (IRI).
-* `RPC.init`: Confirms that a previously registered **processor** has successfully started.
-* `RPC.close`: Notifies that the runner is shutting down because all processors have stopped.
+* `RPC.identify`:  Indicates that the runner is ready and provides their identifier (URI).
+* `RPC.initialized`: Confirms that a previously registered **processor** has successfully started (identified with their URI).
+* `RPC.close`: Notifies the orchestrator that a channel is closing.
 * `RPC.msg`: Sends a message from a processor to another processor via the orchestrator.
-* `RPC.streamMsg`: Sends a streaming message from a processor. Used when the payload is too large for a single message.
+* `RPC.processed`: Indicates that a message has been processed, this can be a normal or a streaming message.
 
 
 ## Orchestrator
 
 The orchestrator is the central runtime entity in RDF-Connect. 
 It reads the pipeline configuration, sets up the runners, initiates processors, and routes messages between them.
-It ensures the dataflow graph described by the pipeline is brought to life across isolated runtimes.
+It ensures the data flow graph described by the pipeline is brought to life across isolated runtimes.
 The orchestrator acts as a coordinator, not an executor. Each runner is responsible for running the actual processor code, but the orchestrator ensures the pipeline as a whole behaves as intended.
 
 Responsibilities:
@@ -436,7 +441,7 @@ rdfc:Processor rdfs:subClassOf prov:Activity.
 For each runner, the orchestrator appends two arguments to the configured command: the URL of the orchestrator's running Protobuf server and the IRI identifying the runner instance.
 It then executes the resulting command to spawn the runner process.
 
-Each runner is expected to connect back with the orchestrator with the `connect` method, setting up a bidirectional stream of messages, dubbed `normal stream`. 
+Each runner is expected to connect back with the orchestrator with the `connect` method, setting up a bidirectional stream of messages, dubbed `mainStream`. 
 When a message is sent, without identifying how, the message is sent using this stream.
 
 The orchestrator MUST track all active runners, specifically recording which ones have sent an `RPC.identify` message after startup.
@@ -537,8 +542,8 @@ The full startup flow is shown in this diagram.
 ### Handling messages
 
 The orchestrator acts as a message broker between processors. 
-It is responsible for receiving messages from runners and forwarding them to the appropriate destination runners based on channel identifiers defined in the pipeline.
-Importantly, channels support **many-to-many** communication: multiple processors may emit to or receive from the same channel.
+It is responsible for receiving messages from runners and forwarding them to the appropriate destination runner based on channel identifiers defined in the pipeline.
+Importantly, channels support **one-to-one** communication: each channel is required to have exactly one Reader and one Writer.
 
 
 #### Normal messages
@@ -546,11 +551,13 @@ Importantly, channels support **many-to-many** communication: multiple processor
 When a runner sends a `RPC.msg` message to the orchestrator, the message includes a channel IRI indicating its logical destination. 
 
 The orchestrator MUST:
-1. Resolve the set of processors that are declared to consume this channel.
-2. Determine which runner is responsible for each of those processors.
-3. Forward the message to each relevant runner using `RPC.msg`.
+1. Resolve which processor consumes this channel.
+2. Determine which runner is responsible for this processor.
+3. Forward the message to the relevant runner using `RPC.msg`.
 
-These messages are sent as discrete units and fit within the allowed message size.
+The consuming runner MUST respond with a `RPC.processed` message that indicates that the processor has consumed the message.
+The orchestrator MUST forward this message to the producing runner.
+Only when the runner received the `RPC.processed` message, the processor is allowed to send a new message on this channel.
 
 
 <pre class="mermaid" id="message">
@@ -562,17 +569,26 @@ These messages are sent as discrete units and fit within the allowed message siz
 When the payload of a message is large, the streaming message protocol SHOULD be used.
 This protocol enables large messages to be sent incrementally over a separate gRPC stream while maintaining channel-based routing.
 
+Just like normal messages on the `mainStream` include a back pressure mechanism, each streaming message also has one.
+
 The process is as follows:
 1. **Sender** (runner) initiates a `sendStreamMessage` gRPC stream to the orchestrator.
-2. The **orchestrator** generates a unique stream identifier and sends it back on this stream.
-3. The **sender** then sends a `RPC.streamMsg` over the normal bidirectional RPC stream, including the stream identifier and the channel IRI.
-4. The **orchestrator** resolves which processors receive messages on the given channel and forwards the stream identifier to their corresponding runners with `RPC.streamMsg`.
-5. **Receiving runners** connect to the orchestrator using `receiveStreamMessage`, passing the received stream identifier.
-6. Once all participants are connected, the orchestrator acts as a relay: all incoming chunks from the sending stream are forwarded to each connected receiving stream.
+2. **Sender** identifies this stream message by sending a `RPC.StreamIdentify` which includes a `localSequenceNumber`, the channel URI and the runner URI.
+3. The **orchestrator** translates this `localSequenceNumber` to a `globalSequenceNumber` and sends a `RPC.streamMsg` over `mainStream` to the receiving runner with the `globalSequenceNumber` and channel URI.
+4. **Receiving runner** connects to the orchestrator using `receiveStreamMessage`, and sends an identifying `StreamControl` with the `globalSequenceNumber`.
+5. Once the receiving runner is connected, the **orchestrator** sends a `StreamControl` message to the Sending runner with a `streamSequenceNumber` value of 0, indicating that the stream has been established.
 
-The orchestrator MUST close all associated receiving streams once the sending stream completes.
 
-This mechanism ensures that high-volume or large data payloads can be distributed across the pipeline efficiently and reliably.
+For each chunk sent by the sending processor, the following steps MUST take place:
+1. **Sender** sends a StreamChunk message with the data of the chunk to the orchestrator.
+2. The **orchestrator** relays this to the connected `receiveStreamMessage` stream.
+3. The **receiving runner** forwards the chunk to the processor, enabling it to process the data.
+4. The **receiving runner** returns a `StreamControl` message with the next `streamSequenceNumber`, this indicates that the chunk has been handled.
+5. The **orchestrator** relays this `StreamControl` message to the sending runner.
+6. The **processor** is permitted to send the next chunk of data.
+
+Once all data has been sent, the **sender** closes the stream message stream.
+Then orchestrator MUST close the associated receiving stream, this indicates the end of the streaming message for the **receiving runner**.
 
 <pre class="mermaid" id="streamMessage">
 </pre>
@@ -592,7 +608,7 @@ These quality-of-life features include:
 
 This is useful for processor to execute longer running operations, like reading a file or consulting an external API.
 
-Runners MAY also coalesce or transform message types to simplify processor implementation.
+Runners SHOULD coalesce or transform message types to simplify processor implementation.
 A streaming message may be aggregated into a single message if the underlying platform supports arbitrarily large strings or buffers,
 and a single message may be exposed to the processor as a streaming interface, emitting a single chunk.
 This flexibility allows generic processors to be implemented more easily without needing to distinguish between streaming and single-message protocols.
@@ -616,6 +632,8 @@ It requires the command to actually start the runner with `rdfc:command`, and a 
 The object of `rdfc:handlesSubjectsOf` links runners and processors to a context term. This often refers to the programming language.
 
 Each context term is related to a SHACL shape, this specifies the incoming data that the runner can use to start the processors.
+
+The full ontology can be found [online](https://rdf-connect.github.io/ontology/).
 
 <div class=example>
 The NodeRunner, for example, is a program that starts JavaScript processors with Node. It is defined as follows:
@@ -658,17 +676,30 @@ Each runner is started by the orchestrator using a command defined in the pipeli
 The orchestrator appends two arguments to this command: the URL of the orchestrator’s Protobuf server and the IRI that uniquely identifies the runner.
 
 Upon startup, the runner MUST connect to the orchestrator using the provided URL via the `RPC.connect` method. 
-This establishes a bidirectional message stream referred to as the normal stream.
+This establishes a bidirectional message stream referred to as the `mainStream`.
 
 Once connected, the runner MUST send an `RPC.identify` message, identifying itself with the provided IRI.
 The orchestrator then sends an `RPC.pipeline` message containing the complete, expanded pipeline definition.
 The runner MAY ignore this message.
 
-Runners MAY initiate a separate log stream using the `RPC.logStream` method to stream log messages back to the orchestrator.
+Runners MAY initiate a separate log stream using the `RPC.logStream` method to transmit log messages to the orchestrator.
 
-<div class=issue>
-🚧 More information about the log stream is coming soon.
-</div>
+Each log message sent by a runner MUST be an instance of `RPC.LogMessage` transmitted over the `logStream`.
+
+Each `RPC.LogMessage` MUST include:
+
+- a textual message
+- a log level
+- one or more entities
+- zero or more aliases
+
+The `logLevel` field MUST correspond to one of the log levels supported by Winston `error`, `warn`, `info`, `http`, `verbose`, `debug` and `silly`.
+
+Entities are labels included when logging the message to standard output (stdout).
+Aliases are additional labels that can be used for filtering or correlation but are not displayed in stdout.
+
+Entities and aliases MAY be full URIs. The orchestrator SHOULD shorten URIs using the prefix mappings defined in the pipeline configuration.
+
 
 ### Starting Processors
 
@@ -687,7 +718,7 @@ If any runner signals an error during initialization, the orchestrator MUST abor
 
 Once all processors are successfully initialized, the orchestrator sends an `RPC.start` message, instructing the runner to start the processors.
 
-After all processors complete their execution, the runner SHOULD gracefully close the normal stream to signal completion.
+After all processors complete their execution, the runner MUST gracefully close the `mainStream` to signal completion.
 
 
 ### Handling messages
@@ -700,31 +731,37 @@ The orchestrator MAY send any number of `RPC.msg` or `RPC.streamMsg` messages.
 When an `RPC.msg` is received, the runner MUST deliver the message to the appropriate processor, using the channel IRI to determine the correct target.
 Message routing can follow either a push or pull model depending on the language environment.
 
-Runners MAY coerce or transform messages into a different representation, including converting a normal message into a streaming message with a single chunk or converting a short streaming message into a normal message.
+Runners SHOULD coerce or transform messages into a different representation, including converting a normal message into a streaming message with a single chunk or converting a short streaming message into a normal message.
 These transformations SHOULD respect the preferences of the processor and the runner's internal design constraints.
+
+After the message has been handled by the processor, the runner MUST send a `RPC.processed` message back to the orchestrator.
+
 
 #### Receiving streaming messages
 
 When an `RPC.streamMsg` is received, the runner MUST establish a streaming channel by invoking the `RPC.receiveStreamMessage` method with the provided stream ID.
 This initiates a stream of chunks from the orchestrator.
 
-The runner MUST forward these chunks to the appropriate processor, using any internal buffering or transformation logic as required.
+The runner MUST forward these chunks to the appropriate processor. 
+After each chunk, the runner MUST send a SendingStreamControl message with an incrementing streamSequenceNumber.
 
-If the runner determines that the message size is small enough, it MAY convert a streaming message into a single message object, provided that this does not violate processor expectations or exceed system limits.
+When the stream is closed, the runner may choose to coalesce all chunks into a single message and forward this to the processor.
+After this optional message is handled, the runner MUST send a `RPC.processed` message back to the orchestrator.
+
 
 #### Sending messages
 
 Runners MUST also support outbound communication from processors. 
 While runners MAY omit support for certain advanced features (such as streaming output), a full implementation is strongly encouraged.
 
-To send a normal message, the runner uses the `RPC.msg` method on the normal stream.
+To send a normal message, the runner uses the `RPC.msg` method on the `mainStream`.
+The processor is only allowed to send a new message after receiving a `RPC.processed` message.
 
 To send a streaming message, the runner first initiates the `RPC.sendStreamMessage` method, which returns a new stream.
-The orchestrator responds with a single message, the stream ID.
+The orchestrator responds with ReceivingStreamControl message, containing the expected next chunk to receive (starting from 0).
 
-The runner then sends an `RPC.streamMsg` on the normal stream, including the channel IRI and stream ID.
-Finally, the runner streams the message content using the created stream.
-The message is considered complete when the runner closes the stream.
+The message is considered complete when the runner closes the stream and the runner received a `RPC.processed` message.
+The processor is only allowed to send a new message after receiving a `RPC.processed` message.
 
 #### Channel Closure
 
@@ -735,9 +772,20 @@ Similarly, when the orchestrator sends an `RPC.close` message for a channel, the
 
 ## Processor
 
-<div class=issue>
-🚧 This section is a work in progress and will be expanded soon.
-</div>
+A processor SHOULD be implemented as generically as possible, while maintaining practical usefulness.
+In most cases, a processor acts as a lightweight wrapper around an existing library that performs a useful task.
+
+In most programming languages, a processor SHOULD implement an interface exposing three methods: initialize, transform, and produce.
+
+- `initialize`: This method is called and awaited before the runner notifies the orchestrator that the processor has been initialized. It is the ideal place to perform setup actions such as connecting to databases or external services.
+- `transform`: This method SHOULD listen for incoming data on input channels and MAY, based on that, write to output channels. It is started (but not awaited) before sending the initialized notification to ensure no incoming messages are lost.
+- `produce`: This method is responsible for sending messages to output channels that are not related to incoming messages on another channel. At this stage, all processors in the pipeline are fully initialized and ready to receive messages.
+
+A processor SHOULD have access to a logger instance that is integrated with the RDF-Connect logging system, enabling unified and aggregated logging across the pipeline.
+
+A transforming processor is considered finished when all of its input channels are closed, and it MUST close all output channels. 
+
+Each processor MUST correctly propagate close events, so no stale channels exist.
 
 
 ## Pipeline
@@ -749,10 +797,23 @@ Similarly, when the orchestrator sends an `RPC.close` message for a channel, the
 
 # Ontology Reference
 
-The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF-Connect Ontology](https://w3id.org/rdf-connect/ontology.ttl) for details.
-
+The RDF-Connect ontology provides the terms used in RDF pipeline definitions. See the full [RDF-Connect Ontology](https://w3id.org/rdf-connect/ontology/) for details.
 
 <script src="./scripts.js" type="module"></script>
 
+<style>
+    .wrapper {
+        position: relative;
+    }
+
+    .wrapper button {
+        position: absolute;
+        top: 0.5rem;
+        left: 100%;
+        color: darkgrey;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>
 
 
