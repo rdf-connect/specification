@@ -435,9 +435,8 @@ rdfc:Processor rdfs:subClassOf prov:Activity.
 </aside>
 <aside class="note">
     Two kinds of runner instantiation are currently defined: `rdfc:CommandRunner`, which is started with a `rdfc:command` as described above, and `rdfc:TcpRunner`, which connects to an already-running runner process over a plain TCP socket, identified with `rdfc:grpc "host:port"` instead of `rdfc:command`.
-    For a `rdfc:TcpRunner`, who dials whom is reversed compared to a `rdfc:CommandRunner`: the orchestrator dials out to the address given by `rdfc:grpc` and sends the runner's IRI over the raw socket. From there the *gRPC* roles are unchanged — the runner still acts as the gRPC client and the orchestrator's gRPC server still receives the connection, exactly as in the `rdfc:CommandRunner` case; only the TCP dial direction and IRI handoff differ (see [[#connecting-flow]]). This allows a runner process to be started and managed independently of the orchestrator, e.g. deployed remotely or kept alive across multiple pipeline runs.
+    For a `rdfc:TcpRunner`, the TCP dial direction is reversed compared to a `rdfc:CommandRunner`: the orchestrator dials out to the address given by `rdfc:grpc` and sends the runner's IRI over the raw socket. From there the *gRPC* roles are unchanged — the runner still acts as the gRPC client and the orchestrator's gRPC server still receives the connection, exactly as in the `rdfc:CommandRunner` case; only the TCP dial direction and IRI handoff differ (see [[#connecting-flow]]). This allows a runner process to be started and managed independently of the orchestrator, e.g. deployed remotely or kept alive across multiple pipeline runs.
     The model remains intentionally extensible to other instantiation strategies.
-    Note: `rdfc:Runner` is a deprecated alias of `rdfc:CommandRunner`, kept for backwards compatibility.
 </aside>
 
 For a `rdfc:CommandRunner`, the orchestrator appends two arguments to the configured command: the URL of the orchestrator's running Protobuf server and the IRI identifying the runner instance.
