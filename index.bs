@@ -433,16 +433,21 @@ rdfc:Processor rdfs:subClassOf prov:Activity.
 ```
     This inference enables seamless integration with provenance-aware tooling.
 </aside>
-<aside class="note">
-    Two kinds of runner instantiation are currently defined: `rdfc:CommandRunner`, which is started with a `rdfc:command` as described above, and `rdfc:TcpRunner`, which connects to an already-running runner process over a plain TCP socket, identified with `rdfc:grpc "host:port"` instead of `rdfc:command`.
-    For a `rdfc:TcpRunner`, the TCP dial direction is reversed compared to a `rdfc:CommandRunner`: the orchestrator dials out to the address given by `rdfc:grpc` and sends the runner's IRI over the raw socket. From there the *gRPC* roles are unchanged — the runner still acts as the gRPC client and the orchestrator's gRPC server still receives the connection, exactly as in the `rdfc:CommandRunner` case; only the TCP dial direction and IRI handoff differ (see [[#connecting-flow]]). This allows a runner process to be started and managed independently of the orchestrator, e.g. deployed remotely or kept alive across multiple pipeline runs.
-    The model remains intentionally extensible to other instantiation strategies.
-</aside>
+Two kinds of runner instantiation are currently defined, and both MUST end up in the same state: a `mainStream` between the orchestrator and the runner, over which the runner has identified itself.
 
 For a `rdfc:CommandRunner`, the orchestrator appends two arguments to the configured command: the URL of the orchestrator's running Protobuf server and the IRI identifying the runner instance.
-It then executes the resulting command to spawn the runner process, which is expected to connect back to the orchestrator with the `connect` method, setting up a bidirectional stream of messages, dubbed `mainStream`.
-A `rdfc:TcpRunner` instead reaches this same state by having the orchestrator connect out to the runner, as described in the aside above.
+It then executes the resulting command to spawn the runner process, which is expected to connect back to the orchestrator with the `RPC.connect` method, setting up a bidirectional stream of messages, dubbed `mainStream`.
+
+A `rdfc:TcpRunner` is not started by the orchestrator, but is already running and reachable over a plain TCP socket at the `host:port` given by `rdfc:grpc` instead of `rdfc:command`.
+For such a runner the TCP dial direction is reversed: the orchestrator MUST connect to that address and write the runner's IRI over the raw socket, and MUST then hand its end of that socket to the same gRPC server that serves `RPC.connect` for command runners.
+From there the *gRPC* roles are unchanged — the runner still acts as the gRPC client and the orchestrator's gRPC server still receives the connection, exactly as in the `rdfc:CommandRunner` case; only the TCP dial direction and the IRI handoff differ (see [[#connecting-flow]]).
+
 When a message is sent, without identifying how, the message is sent using this `mainStream`.
+
+<aside class="note">
+    Because a `rdfc:TcpRunner` is not spawned by the orchestrator, its process can be started and managed independently, e.g. deployed remotely or kept alive across multiple pipeline runs.
+    The model remains intentionally extensible to other instantiation strategies.
+</aside>
 
 The orchestrator MUST track all active runners, specifically recording which ones have sent an `RPC.identify` message after startup.
 This message confirms that the runner is ready to accept processor assignments.
@@ -639,11 +644,16 @@ The following sections detail the runner startup flow and describe the expected 
 
 ### Pipeline Configuration
 
-A runner is defined with an instance of `rdfc:CommandRunner` or `rdfc:TcpRunner`, both of which are always linked to their programming context with `rdfc:handlesSubjectsOf`.
+A runner is defined as an instance of a runner class.
+Every runner MUST be linked to its programming context with `rdfc:handlesSubjectsOf`, and MUST declare how it is reached, so that a `mainStream` can be established over which it identifies itself with its own IRI.
 The object of `rdfc:handlesSubjectsOf` links runners and processors to a context term. This often refers to the programming language.
 
-A `rdfc:CommandRunner` additionally requires the command used to start the runner process with `rdfc:command`.
-A `rdfc:TcpRunner` instead requires a `rdfc:grpc "host:port"` address of an already-running runner process; see the note in [[#starting-the-runners]] for how connection setup differs for this kind of runner.
+The runner class determines how that connection is established. Two classes are currently defined:
+
+- A `rdfc:CommandRunner` MUST declare, with `rdfc:command`, the command used to start the runner process. The orchestrator spawns that process and the runner connects back to the orchestrator.
+- A `rdfc:TcpRunner` MUST declare, with `rdfc:grpc`, the `"host:port"` address of an already-running runner process. The orchestrator connects out to that address instead of starting a process.
+
+Both are described in full in [[#connecting-flow]].
 
 Each context term is related to a SHACL shape, this specifies the incoming data that the runner can use to start the processors.
 
@@ -686,13 +696,17 @@ And a shape is linked with that predicate, runners can expect a file location an
 
 ### Connecting Flow
 
+Every runner MUST establish a bidirectional message stream with the orchestrator, referred to as the `mainStream`, using the `RPC.connect` method, and MUST learn the IRI that uniquely identifies it within the pipeline.
+The runner class determines how the runner obtains that IRI and how the underlying transport is set up; in both cases below the runner is the gRPC client and the orchestrator's gRPC server accepts the connection.
+
 Each `rdfc:CommandRunner` is started by the orchestrator using a command defined in the pipeline via `rdfc:command`.
 The orchestrator appends two arguments to this command: the URL of the orchestrator’s Protobuf server and the IRI that uniquely identifies the runner.
-
 Upon startup, the runner MUST connect to the orchestrator using the provided URL via the `RPC.connect` method.
-This establishes a bidirectional message stream referred to as the `mainStream`.
 
-A `rdfc:TcpRunner` is already running independently of the orchestrator and listens on the `host:port` given by `rdfc:grpc`. The orchestrator connects to it directly over TCP and writes the runner's IRI on the raw socket; the runner then drives the rest of this section as normal, using that same socket as the transport for its own `RPC.connect` call (the orchestrator hands its end of the socket to the same gRPC server that handles `RPC.connect` for `rdfc:CommandRunner`s, so from the orchestrator's perspective it is an ordinary incoming connection).
+Each `rdfc:TcpRunner` is already running independently of the orchestrator and MUST listen for plain TCP connections on the `host:port` given by `rdfc:grpc`.
+The orchestrator connects to it directly over TCP and writes the runner's IRI on the raw socket.
+The runner MUST read that IRI from the socket and MUST then use the same socket as the transport for its own `RPC.connect` call.
+The orchestrator hands its end of the socket to the same gRPC server that handles `RPC.connect` for `rdfc:CommandRunner`s, so from the orchestrator's perspective it is an ordinary incoming connection.
 
 Once connected, the runner MUST send an `RPC.identify` message, identifying itself with the provided IRI.
 The orchestrator then sends an `RPC.pipeline` message containing the complete, expanded pipeline definition.
