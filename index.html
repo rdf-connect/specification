@@ -1489,7 +1489,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version d113b2e81, updated Tue Jun 9 14:57:55 2026 -0700" name="generator">
-  <meta content="b35f6179d2dd0e9067be1b9c4ee65408bb9307f3" name="revision">
+  <meta content="23dc540786395191dc2afa5ffb5b80aa5292e7de" name="revision">
   <meta content="dark light" name="color-scheme">
   <link href="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
@@ -2062,7 +2062,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p data-fill-with="logo"></p>
    <h1 class="no-ref p-name" id="title">RDF-Connect Specification</h1>
    <h2 class="heading no-num no-ref no-toc settled" id="profile-and-date"><span class="content">Living Standard,
-    <time class="dt-updated" datetime="2026-07-16">16 July 2026</time></span></h2>
+    <time class="dt-updated" datetime="2026-08-13">13 August 2026</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Issue Tracking:
@@ -2076,7 +2076,7 @@ c-[il] { color: #000000 } /* Literal.Number.Integer.Long */
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" height="15" src="https://licensebuttons.net/p/zero/1.0/80x15.png" width="80"></a>
 To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 16 July 2026,
+In addition, as of 13 August 2026,
 the editors have made this specification available under the
 <a href="https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at https://www.openwebfoundation.org/the-agreements/the-owf-1-0-agreements-granted-claims/owfa-1-0.
@@ -2147,13 +2147,14 @@ Parts of this work may be from another specification document.  If so, those par
           <li><a href="#normal-messages"><span class="secno">6.2.2.1</span> <span class="content">Normal messages</span></a>
           <li><a href="#streaming-messages"><span class="secno">6.2.2.2</span> <span class="content">Streaming messages</span></a>
          </ol>
+        <li><a href="#provenance-inference"><span class="secno">6.2.3</span> <span class="content">Provenance Inference</span></a>
        </ol>
       <li>
        <a href="#runner①"><span class="secno">6.3</span> <span class="content">Runner</span></a>
        <ol class="toc">
         <li><a href="#pipeline-configuration"><span class="secno">6.3.1</span> <span class="content">Pipeline Configuration</span></a>
         <li><a href="#connecting-flow"><span class="secno">6.3.2</span> <span class="content">Connecting Flow</span></a>
-        <li><a href="#starting-processors①"><span class="secno">6.3.3</span> <span class="content">Starting Processors</span></a>
+        <li><a href="#instantiating-processors"><span class="secno">6.3.3</span> <span class="content">Instantiating Processors</span></a>
         <li>
          <a href="#handling-messages①"><span class="secno">6.3.4</span> <span class="content">Handling messages</span></a>
          <ol class="toc">
@@ -2511,7 +2512,7 @@ Each pair includes:</p>
     <li data-md>
      <p>the language it supports, linked with <code>rdfc:handlesSubjectsOf</code></p>
     <li data-md>
-     <p>how the runner should be started, linked with <code>rdfc:command</code></p>
+     <p>how the runner should be started or reached, linked with <code>rdfc:command</code> (for a <code>rdfc:CommandRunner</code>) or <code>rdfc:grpc</code> (for a <code>rdfc:TcpRunner</code>)</p>
    </ul>
    <aside class="note">
     
@@ -2531,18 +2532,24 @@ Each pair includes:</p>
     This inference enables seamless integration with provenance-aware tooling.
 
    </aside>
+   
+Two kinds of runner instantiation are currently defined, and both MUST end up in the same state: a <code>mainStream</code> between the orchestrator and the runner, over which the runner has identified itself.
+
+
+   <p>For a <code>rdfc:CommandRunner</code>, the orchestrator appends two arguments to the configured command: the URL of the orchestrator’s running Protobuf server and the IRI identifying the runner instance.
+It then executes the resulting command to spawn the runner process, which is expected to connect back to the orchestrator with the <code>RPC.connect</code> method, setting up a bidirectional stream of messages, dubbed <code>mainStream</code>.</p>
+   <p>A <code>rdfc:TcpRunner</code> is not started by the orchestrator, but is already running and reachable over a plain TCP socket at the <code>host:port</code> given by <code>rdfc:grpc</code> instead of <code>rdfc:command</code>.
+For such a runner the TCP dial direction is reversed: the orchestrator MUST connect to that address and write the runner’s IRI over the raw socket, and MUST then hand its end of that socket to the same gRPC server that serves <code>RPC.connect</code> for command runners.
+From there the <em>gRPC</em> roles are unchanged — the runner still acts as the gRPC client and the orchestrator’s gRPC server still receives the connection, exactly as in the <code>rdfc:CommandRunner</code> case; only the TCP dial direction and the IRI handoff differ (see <a href="#connecting-flow">§ 6.3.2 Connecting Flow</a>).</p>
+   <p>When a message is sent, without identifying how, the message is sent using this <code>mainStream</code>.</p>
    <aside class="note">
-    Currently, only <strong>command-line-based runners</strong> are supported and defined, but the model is intentionally extensible.
-    In the future, runners might be deployed remotely and communicate over a network. Such runners would not require a <code>rdfc:command</code>, but instead might define a connection endpoint (e.g., a URL or service descriptor).
+    Because a <code>rdfc:TcpRunner</code> is not spawned by the orchestrator, its process can be started and managed independently, e.g. deployed remotely or kept alive across multiple pipeline runs.
+    The model remains intentionally extensible to other instantiation strategies.
 </aside>
-   <p>For each runner, the orchestrator appends two arguments to the configured command: the URL of the orchestrator’s running Protobuf server and the IRI identifying the runner instance.
-It then executes the resulting command to spawn the runner process.</p>
-   <p>Each runner is expected to connect back with the orchestrator with the <code>connect</code> method, setting up a bidirectional stream of messages, dubbed <code>mainStream</code>.
-When a message is sent, without identifying how, the message is sent using this stream.</p>
    <p>The orchestrator MUST track all active runners, specifically recording which ones have sent an <code>RPC.identify</code> message after startup.
 This message confirms that the runner is ready to accept processor assignments.
-The orchestrator responds to the runner with a <code>RPC.pipeline</code> message, containing the full expanded pipeline as Turtle.
-This pipeline configuration is useful when a runner wants to extract processor arguments themselves, instead of using the provided JSON-LD.</p>
+The orchestrator responds to the runner with a <code>RPC.pipeline</code> message, containing the full expanded pipeline as Turtle, enriched with the provenance triples inferred as described in <a href="#provenance-inference">§ 6.2.3 Provenance Inference</a> (e.g. the <code>prov:Activity</code> subclass facts derived from <code>rdfc:jsImplementationOf</code> and similar predicates).
+This pipeline configuration is useful when a runner wants to extract processor arguments themselves, instead of using the provided JSON-LD, though as noted in <a href="#starting-processors">§ 6.2.1.3 Starting processors</a> this is not required — the JSON-LD arguments sent per-processor are already sufficient.</p>
    <p>Once all expected runners have successfully identified themselves, the orchestrator proceeds to the next step in the pipeline initialization sequence.</p>
    <h5 class="heading settled" data-level="6.2.1.3" id="starting-processors"><span class="secno">6.2.1.3. </span><span class="content">Starting processors</span><a class="self-link" href="#starting-processors"></a></h5>
    <p>Once all runners have been successfully identified via <code>RPC.identify</code>, the orchestrator proceeds to initialize the processors defined in the pipeline.
@@ -2552,8 +2559,10 @@ This involves the extraction and transformation of processor configuration data 
 JSON-LD fits the requirements as it is selected for the following reasons, and it allows encoding of typed literals and nested structures, in alignment with SHACL definitions. 
 This while still enabling extensibility, supporting advanced use cases such as capturing full SHACL paths or preserving provenance metadata.</p>
    <p>Support for JSON-LD is optional for runners.
-Runners MAY choose to treat the JSON-LD as plain JSON if they do not require the semantic context or graph-aware features. 
+Runners MAY choose to treat the JSON-LD as plain JSON if they do not require the semantic context or graph-aware features.
 However, all runners MUST accept the structure produced by the orchestrator.</p>
+   <p>The <code>arguments</code> JSON-LD object sent in <code>RPC.proc</code> is already fully resolved by the orchestrator and is, by design, sufficient on its own to construct a processor’s arguments: a runner is not expected to re-derive arguments from RDF.
+A runner MAY instead extract arguments itself from the <code>RPC.pipeline</code> Turtle (e.g. using a SHACL-shape extraction library), as noted in <a href="#starting-the-runners">§ 6.2.1.2 Starting the runners</a>, but this is purely an implementation choice, not a requirement — it is only useful for runners that need semantic/graph-aware features the JSON-LD form does not expose, or that already have SHACL-extraction tooling on hand for other reasons. It comes at the cost of duplicating the SHACL-to-configuration mapping logic that the orchestrator already performed once.</p>
    <p>Processor arguments come from the SHACL shape defined for the processor type.
 Each field is mapped following section <a href="#mapping-shacl-to-configuration-structures">Mapping SHACL to Configuration Structures</a>.
 A JSON-LD <code>@context</code> is generated mapping all <code>sh:name</code> values to the corresponding IRIs from <code>sh:path</code>.
@@ -2605,8 +2614,8 @@ A JSON-LD <code>@context</code> is generated mapping all <code>sh:name</code> va
    <p>Processor definitions are extracted using the same SHACL-based mechanism described previously. The shape used for this extraction is associated with the programming language or runtime type and MUST be processed in the same way to produce a structured JSON-LD object.</p>
    <p><strong>RPC message</strong></p>
    <p>Once both the arguments and definition have been extracted for a processor instance, the orchestrator sends an <code>RPC.proc</code> message to the appropriate runner, initiating the processor launch process.</p>
-   <p>The orchestrator MUST keep an internal record of all processor instance that have been dispatched to a runner, and the runner’s acknowledgment that a processor was successfully launched, as indicated by an incoming <code>Rpc.init</code> message.</p>
-   <p>No processor may be assumed to be operational until its runner has responded with <code>RPC.init</code>.
+   <p>The orchestrator MUST keep an internal record of all processor instance that have been dispatched to a runner, and the runner’s acknowledgment that a processor was successfully launched, as indicated by an incoming <code>RPC.initialized</code> message.</p>
+   <p>No processor may be assumed to be operational until its runner has responded with <code>RPC.initialized</code>.
 When all processors are successfully initialized, the orchestrator can start the pipeline.</p>
    <h5 class="heading settled" data-level="6.2.1.4" id="starting-the-pipeline"><span class="secno">6.2.1.4. </span><span class="content">Starting the pipeline</span><a class="self-link" href="#starting-the-pipeline"></a></h5>
    <p>The orchestrator can start the pipeline by sending a <code>RPC.start</code> message to each runner.</p>
@@ -2666,6 +2675,11 @@ This protocol enables large messages to be sent incrementally over a separate gR
    <p>Once all data has been sent, the <strong>sender</strong> closes the stream message stream.
 Then orchestrator MUST close the associated receiving stream, this indicates the end of the streaming message for the <strong>receiving runner</strong>.</p>
 <pre class="mermaid" id="streamMessage"></pre>
+   <h4 class="heading settled" data-level="6.2.3" id="provenance-inference"><span class="secno">6.2.3. </span><span class="content">Provenance Inference</span><a class="self-link" href="#provenance-inference"></a></h4>
+   <p>Before starting any runner, the orchestrator computes the pipeline’s PROV-O provenance metadata: it combines the expanded pipeline quads with the RDF-Connect ontology and a fixed set of N3 rules, and materializes the derived triples (such as inferring that a processor instance is a <code>prov:Activity</code>, as illustrated in <a href="#starting-the-runners">§ 6.2.1.2 Starting the runners</a>).
+The resulting quads, merged with the original pipeline quads, are what is sent to each runner as the <code>RPC.pipeline</code> Turtle; runners therefore do not need their own reasoning support to observe this inferred provenance.</p>
+   <p>During and after execution, the orchestrator additionally records runtime timing as further provenance: a <code>prov:startedAtTime</code> for each processor once <code>RPC.start</code> is sent, a <code>prov:endedAtTime</code> for each processor once all channels have closed, and a <code>prov:generatedAtTime</code> for each channel at the moment it closes.
+Implementations MAY expose an option to persist the combined (inferred plus timing) provenance graph to a file once the pipeline finishes.</p>
    <h3 class="heading settled" data-level="6.3" id="runner①"><span class="secno">6.3. </span><span class="content">Runner</span><a class="self-link" href="#runner①"></a></h3>
    <p>A runner in RDF-Connect is responsible for managing and executing processors within a specific execution context—typically a programming language runtime.
 Each runner MUST connect with the orchestrator’s Protobuf server and follow the RDF-Connect protocol.</p>
@@ -2693,17 +2707,25 @@ This flexibility allows generic processors to be implemented more easily without
    </div>
    <p>The following sections detail the runner startup flow and describe the expected interactions between runners and the orchestrator during initialization and execution.</p>
    <h4 class="heading settled" data-level="6.3.1" id="pipeline-configuration"><span class="secno">6.3.1. </span><span class="content">Pipeline Configuration</span><a class="self-link" href="#pipeline-configuration"></a></h4>
-   <p>A runner is defined with an instance of <code>rdfc:Runner</code>, which currently is instantiated by a command.
-It requires the command to actually start the runner with <code>rdfc:command</code>, and a link to the programming context (<code>rdfc:handlesSubjectsOf</code>).
+   <p>A runner is defined as an instance of a runner class.
+Every runner MUST be linked to its programming context with <code>rdfc:handlesSubjectsOf</code>, and MUST declare how it is reached, so that a <code>mainStream</code> can be established over which it identifies itself with its own IRI.
 The object of <code>rdfc:handlesSubjectsOf</code> links runners and processors to a context term. This often refers to the programming language.</p>
+   <p>The runner class determines how that connection is established. Two classes are currently defined:</p>
+   <ul>
+    <li data-md>
+     <p>A <code>rdfc:CommandRunner</code> MUST declare, with <code>rdfc:command</code>, the command used to start the runner process. The orchestrator spawns that process and the runner connects back to the orchestrator.</p>
+    <li data-md>
+     <p>A <code>rdfc:TcpRunner</code> MUST declare, with <code>rdfc:grpc</code>, the <code>"host:port"</code> address of an already-running runner process. The orchestrator connects out to that address instead of starting a process.</p>
+   </ul>
+   <p>Both are described in full in <a href="#connecting-flow">§ 6.3.2 Connecting Flow</a>.</p>
    <p>Each context term is related to a SHACL shape, this specifies the incoming data that the runner can use to start the processors.</p>
    <p>The full ontology can be found <a href="https://rdf-connect.github.io/ontology/">online</a>.</p>
-   <div class="example" id="example-9a413371">
-    <a class="self-link" href="#example-9a413371"></a>
+   <div class="example" id="example-3b9b8515">
+    <a class="self-link" href="#example-3b9b8515"></a>
 The NodeRunner, for example, is a program that starts JavaScript processors with Node. It is defined as follows:
 
 
-<pre class="highlight language-turtle"><c- nn>rdfc</c-><c- p>:</c-><c- f>NodeRunner</c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>Runner</c-><c- p>;</c->
+<pre class="highlight language-turtle"><c- nn>rdfc</c-><c- p>:</c-><c- f>NodeRunner</c-> <c- b>a</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>CommandRunner</c-><c- p>;</c->
 <c- nn>rdfc</c-><c- p>:</c-><c- f>handlesSubjectsOf</c-> <c- nn>rdfc</c-><c- p>:</c-><c- f>jsImplementationOf</c-><c- p>;</c->
 <c- nn>rdfc</c-><c- p>:</c-><c- f>command</c-> <c- s>"npx js-runner"</c-><c- p>.</c->
 
@@ -2732,10 +2754,15 @@ The NodeRunner, for example, is a program that starts JavaScript processors with
 And a shape is linked with that predicate, runners can expect a file location and a class name to start the JavaScript processors.</p>
    </div>
    <h4 class="heading settled" data-level="6.3.2" id="connecting-flow"><span class="secno">6.3.2. </span><span class="content">Connecting Flow</span><a class="self-link" href="#connecting-flow"></a></h4>
-   <p>Each runner is started by the orchestrator using a command defined in the pipeline via <code>rdfc:command</code>.
-The orchestrator appends two arguments to this command: the URL of the orchestrator’s Protobuf server and the IRI that uniquely identifies the runner.</p>
-   <p>Upon startup, the runner MUST connect to the orchestrator using the provided URL via the <code>RPC.connect</code> method.
-This establishes a bidirectional message stream referred to as the <code>mainStream</code>.</p>
+   <p>Every runner MUST establish a bidirectional message stream with the orchestrator, referred to as the <code>mainStream</code>, using the <code>RPC.connect</code> method, and MUST learn the IRI that uniquely identifies it within the pipeline.
+The runner class determines how the runner obtains that IRI and how the underlying transport is set up; in both cases below the runner is the gRPC client and the orchestrator’s gRPC server accepts the connection.</p>
+   <p>Each <code>rdfc:CommandRunner</code> is started by the orchestrator using a command defined in the pipeline via <code>rdfc:command</code>.
+The orchestrator appends two arguments to this command: the URL of the orchestrator’s Protobuf server and the IRI that uniquely identifies the runner.
+Upon startup, the runner MUST connect to the orchestrator using the provided URL via the <code>RPC.connect</code> method.</p>
+   <p>Each <code>rdfc:TcpRunner</code> is already running independently of the orchestrator and MUST listen for plain TCP connections on the <code>host:port</code> given by <code>rdfc:grpc</code>.
+The orchestrator connects to it directly over TCP and writes the runner’s IRI on the raw socket.
+The runner MUST read that IRI from the socket and MUST then use the same socket as the transport for its own <code>RPC.connect</code> call.
+The orchestrator hands its end of the socket to the same gRPC server that handles <code>RPC.connect</code> for <code>rdfc:CommandRunner</code>s, so from the orchestrator’s perspective it is an ordinary incoming connection.</p>
    <p>Once connected, the runner MUST send an <code>RPC.identify</code> message, identifying itself with the provided IRI.
 The orchestrator then sends an <code>RPC.pipeline</code> message containing the complete, expanded pipeline definition.
 The runner MAY ignore this message.</p>
@@ -2752,11 +2779,11 @@ The runner MAY ignore this message.</p>
     <li data-md>
      <p>zero or more aliases</p>
    </ul>
-   <p>The <code>logLevel</code> field MUST correspond to one of the log levels supported by Winston <code>error</code>, <code>warn</code>, <code>info</code>, <code>http</code>, <code>verbose</code>, <code>debug</code> and <code>silly</code>.</p>
+   <p>The <code>level</code> field MUST correspond to one of the log levels supported by Winston <code>error</code>, <code>warn</code>, <code>info</code>, <code>http</code>, <code>verbose</code>, <code>debug</code> and <code>silly</code>.</p>
    <p>Entities are labels included when logging the message to standard output (stdout).
 Aliases are additional labels that can be used for filtering or correlation but are not displayed in stdout.</p>
    <p>Entities and aliases MAY be full URIs. The orchestrator SHOULD shorten URIs using the prefix mappings defined in the pipeline configuration.</p>
-   <h4 class="heading settled" data-level="6.3.3" id="starting-processors①"><span class="secno">6.3.3. </span><span class="content">Starting Processors</span><a class="self-link" href="#starting-processors①"></a></h4>
+   <h4 class="heading settled" data-level="6.3.3" id="instantiating-processors"><span class="secno">6.3.3. </span><span class="content">Instantiating Processors</span><a class="self-link" href="#instantiating-processors"></a></h4>
    <p>After initialization, the orchestrator may send multiple <code>RPC.proc</code> messages to instruct the runner to start specific processors.
 Each message includes a processor IRI, a configuration object and an argument object.
 Both the configuration and arguments are provided as JSON-LD strings.
@@ -2765,7 +2792,7 @@ The arguments are constructed based on a SHACL shape defined for the processor t
    <p>Runners MAY parse these JSON-LD payloads and transform known constructs into idiomatic equivalents.
 For example, reader and writer objects are represented as JSON-LD values with: an <code>@id</code> field (containing the channel IRI), and an <code>@type</code> field indicating either <code>https://w3id.org/rdf-connect#Reader</code> or <code>https://w3id.org/rdf-connect#Writer</code>.
 Runners are RECOMMENDED to replace these values with appropriate typed objects in the target environment.</p>
-   <p>When a processor has been fully initialized, the runner MUST send an <code>RPC.init</code> message, indicating success or failure.
+   <p>When a processor has been fully initialized, the runner MUST send an <code>RPC.initialized</code> message, indicating success or failure.
 If any runner signals an error during initialization, the orchestrator MUST abort the pipeline execution.</p>
    <p>Once all processors are successfully initialized, the orchestrator sends an <code>RPC.start</code> message, instructing the runner to start the processors.</p>
    <p>After all processors complete their execution, the runner MUST gracefully close the <code>mainStream</code> to signal completion.</p>
